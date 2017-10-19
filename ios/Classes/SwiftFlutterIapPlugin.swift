@@ -33,11 +33,11 @@ class IAPHandler: NSObject {
   
   var purchaseStatusBlock: ((String) -> Void)?
   
-  // MARK: - MAKE PURCHASE OF A PRODUCT
   func canMakePurchases() -> Bool {  return SKPaymentQueue.canMakePayments()  }
   
-  func purchaseMyProduct(_ id: String){
+  func purchaseMyProduct(_ id: String) {
     if iapProducts.count == 0 {
+      purchaseStatusBlock?("emptyProducts")
       return
     }
     
@@ -53,12 +53,12 @@ class IAPHandler: NSObject {
     }
   }
   
-  func restorePurchase(){
+  func restorePurchase() {
     SKPaymentQueue.default().add(self)
     SKPaymentQueue.default().restoreCompletedTransactions()
   }
   
-  func fetchAvailableProducts(_ ids: [String], _ completion: ([Any]) -> ()){
+  func fetchAvailableProducts(_ ids: [String], _ completion: ([Any]) -> ()) {
     let productIdentifiers = NSSet(array: ids)
     
     productsRequest = SKProductsRequest(productIdentifiers: productIdentifiers as! Set<String>)
@@ -67,7 +67,7 @@ class IAPHandler: NSObject {
   }
 }
 
-extension IAPHandler: SKProductsRequestDelegate, SKPaymentTransactionObserver{
+extension IAPHandler: SKProductsRequestDelegate, SKPaymentTransactionObserver {
   func productsRequest (_ request:SKProductsRequest, didReceive response:SKProductsResponse) {
     if (response.products.count > 0) {
       var result : [String] = []
