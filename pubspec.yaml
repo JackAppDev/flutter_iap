@@ -10,5 +10,5 @@ dependencies:
 
 flutter:
   plugin:
-    androidPackage: com.yourcompany.flutteriap
+    androidPackage: com.jackappdev.flutteriap
     pluginClass: FlutterIapPlugin

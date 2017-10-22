@@ -1,4 +1,4 @@
-group 'com.yourcompany.flutteriap'
+group 'com.jackappdev.flutteriap'
 version '1.0-SNAPSHOT'
 buildscript {
     repositories {

@@ -1,4 +1,4 @@
-package com.yourcompany.flutteriapexample;
+package com.jackappdev.flutteriapexample;
 
 import android.os.Bundle;
 

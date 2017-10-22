@@ -1,4 +1,4 @@
-package com.yourcompany.flutteriap;
+package com.jackappdev.flutteriap;
 
 import android.text.TextUtils;
 import android.util.Base64;
