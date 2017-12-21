@@ -83,16 +83,18 @@ public class FlutterIapPlugin implements MethodCallHandler {
 
                 @Override
                 public void onConsumeFinished(String token, @BillingClient.BillingResponse int result) {
-
+                    Log.e("token", token);
                 }
 
                 @Override
                 public void onPurchasesUpdated(List<Purchase> purchases) {
-                    for (Purchase p : purchases) {
+                    Log.e("purchases", purchases.toString());
+                    if (purchases.size() > 0) {
+                        Purchase p = purchases.get(0);
                         Log.e("Consuming", p.getSku());
                         billingManager.consumeAsync(p.getPurchaseToken());
+                        result.success("purchased");
                     }
-                    result.success(purchases);
                 }
             });
         }

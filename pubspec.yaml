@@ -1,7 +1,7 @@
 name: flutter_iap
 description: in app purchases for flutter
-version: 0.0.1
-author: Jack ODonnell
+version: 1.0.1
+author: Jack ODonnell <jackappdevinc@gmail.com>
 homepage: https://github.com/JackAppDev/flutter_iap/
 
 dependencies:
