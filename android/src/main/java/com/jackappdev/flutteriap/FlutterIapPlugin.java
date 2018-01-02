@@ -67,7 +67,10 @@ public class FlutterIapPlugin implements MethodCallHandler {
 
             @Override
             public void onActivityDestroyed(Activity activity) {
-                billingManager.destroy();
+                if(billingManager != null) {
+                    billingManager.destroy();
+                    billingManager = null;
+                }
             }
         });
     }
