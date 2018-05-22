@@ -1,7 +1,9 @@
 # flutter_iap
 
 Add _In-App Payments_ to your Flutter app with this plugin.
-
+- You can fecth IAP products from Google Play and App Store
+- You can buy an IAP product
+- You can restore purchases from App Store (only iOS)
 ## Getting Started
 
 For help getting started with Flutter, view our online
@@ -38,8 +40,8 @@ class _MyAppState extends State<MyApp> {
   }
 
   init() async {
-    List<String> productIds = await FlutterIap.fetchProducts(["com.example.testiap"]);
-
+    IAPResponse response = await FlutterIap.fetchProducts(["com.example.testiap"]);
+    List<IAPProduct> productIds = response.products;
     if (!mounted)
       return;
 
@@ -55,12 +57,12 @@ class _MyAppState extends State<MyApp> {
           title: new Text('IAP example app'),
         ),
         body: new Center(
-          child: new Text('Fetched: $_productIds\n'),
+          child: new Text('Fetched: ${_productIds.map<String>((product) => "${product.productIdentifier}-${product.localizedPrice}").toList()}\n'),
         ),
         floatingActionButton: new FloatingActionButton(
           child: new Icon(Icons.monetization_on),
           onPressed: () {
-            FlutterIap.buy(_productIds.first);
+            FlutterIap.buy(_productIds.first.productIdentifier);
           },
         ),
       ),
