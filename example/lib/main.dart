@@ -11,7 +11,7 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
 
-  List<String> _productIds = [];
+  List<IAPProduct> _productIds = [];
 
   @override initState() {
     super.initState();
@@ -19,7 +19,8 @@ class _MyAppState extends State<MyApp> {
   }
 
   init() async {
-    List<String> productIds = await FlutterIap.fetchProducts(["com.example.testiap"]);
+    IAPResponse response = await FlutterIap.fetchProducts(["com.example.testiap"]);
+    List<IAPProduct> productIds = response.products;
 
     if (!mounted)
       return;
@@ -36,12 +37,12 @@ class _MyAppState extends State<MyApp> {
           title: new Text('IAP example app'),
         ),
         body: new Center(
-          child: new Text('Fetched: $_productIds\n'),
+          child: new Text('Fetched: ${_productIds.map<String>((product) => "${product.productIdentifier}-${product.localizedPrice}").toList()}\n'),
         ),
         floatingActionButton: new FloatingActionButton(
           child: new Icon(Icons.monetization_on),
           onPressed: () {
-            FlutterIap.buy(_productIds.first);
+            FlutterIap.buy(_productIds.first.productIdentifier);
           },
         ),
       ),

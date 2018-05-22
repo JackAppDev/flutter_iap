@@ -2,13 +2,14 @@ package com.jackappdev.flutteriap;
 
 import android.app.Activity;
 import android.app.Application;
-import android.content.Intent;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
 import android.util.Log;
 
 import com.android.billingclient.api.BillingClient;
 import com.android.billingclient.api.Purchase;
+import com.android.billingclient.api.SkuDetails;
+import com.android.billingclient.api.SkuDetailsParams;
+import com.android.billingclient.api.SkuDetailsResponseListener;
 
 import java.util.List;
 
@@ -67,7 +68,7 @@ public class FlutterIapPlugin implements MethodCallHandler {
 
             @Override
             public void onActivityDestroyed(Activity activity) {
-                if(billingManager != null) {
+                if (billingManager != null) {
                     billingManager.destroy();
                     billingManager = null;
                 }
@@ -96,14 +97,37 @@ public class FlutterIapPlugin implements MethodCallHandler {
                         Purchase p = purchases.get(0);
                         Log.e("Consuming", p.getSku());
                         billingManager.consumeAsync(p.getPurchaseToken());
-                        result.success("purchased");
+                        result.success(jsonFromString("purchased"));
                     }
                 }
+            }, null);
+        } else if (call.method.equals("fetch")) {
+            billingManager = new BillingManager(activity, null, new SkuDetailsResponseListener() {
+                @Override
+                public void onSkuDetailsResponse(int responseCode,
+                                                 List<SkuDetails> skuDetailsList) {
+                    StringBuilder sb = new StringBuilder("[");
+                    for (SkuDetails details:skuDetailsList) {
+                        if (sb.length() > 0){
+                            sb.append(",");
+                        }
+                        sb.append("{\"localizedDescription\":\""+details.getDescription()+"\"");
+                        sb.append(",\"localizedTitle\":\""+details.getTitle()+"\"");
+                        sb.append(",\"price\":\""+details.getPrice()+"\"");
+                        sb.append(",\"priceLocale\":\""+details.getPriceCurrencyCode()+"\"");
+                        sb.append(",\"localizedPrice\":\""+details.getPrice()+"\"");
+                        sb.append(",\"productIdentifier\":\""+details.getSku()+"\"}");
+                    }
+                    sb.append("]");
+                    result.success("{\"status\":\"loaded\",\"products\":"+sb.toString()+"}");
+                }
+
             });
+            billingManager.querySKUProducts((List<String>) call.arguments);
         }
-
-
     }
 
-
+    public String jsonFromString(String status) {
+        return "{\"status\":\"" + status + "\"}";
+    }
 }
