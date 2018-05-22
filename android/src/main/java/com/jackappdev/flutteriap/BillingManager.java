@@ -41,6 +41,8 @@ public class BillingManager implements PurchasesUpdatedListener {
 
     private final BillingUpdatesListener mBillingUpdatesListener;
 
+    private final SkuDetailsResponseListener mSkuDetailsResponseListener;
+
     private final Activity mActivity;
 
     private final List<Purchase> mPurchases = new ArrayList<>();
@@ -80,10 +82,11 @@ public class BillingManager implements PurchasesUpdatedListener {
         void onServiceConnected(@BillingResponse int resultCode);
     }
 
-    public BillingManager(Activity activity, final BillingUpdatesListener updatesListener) {
+    public BillingManager(Activity activity, final BillingUpdatesListener updatesListener, final SkuDetailsResponseListener responseListener) {
         Log.d(TAG, "Creating Billing client.");
         mActivity = activity;
         mBillingUpdatesListener = updatesListener;
+        mSkuDetailsResponseListener = responseListener;
         mBillingClient = BillingClient.newBuilder(mActivity).setListener(this).build();
 
         Log.d(TAG, "Starting setup.");
@@ -276,6 +279,12 @@ public class BillingManager implements PurchasesUpdatedListener {
             Log.w(TAG, "areSubscriptionsSupported() got an error response: " + responseCode);
         }
         return responseCode == BillingResponse.OK;
+    }
+
+    public void querySKUProducts(List<String> products){
+        SkuDetailsParams.Builder params = SkuDetailsParams.newBuilder();
+        params.setSkusList(products).setType(BillingClient.SkuType.INAPP);
+        mBillingClient.querySkuDetailsAsync(params.build(), mSkuDetailsResponseListener);
     }
 
     /**
