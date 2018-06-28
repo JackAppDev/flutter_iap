@@ -98,7 +98,9 @@ public class BillingManager implements PurchasesUpdatedListener {
             @Override
             public void run() {
                 // Notifying the listener that billing client is ready
-                mBillingUpdatesListener.onBillingClientSetupFinished();
+                if (mBillingUpdatesListener != null) {
+                    mBillingUpdatesListener.onBillingClientSetupFinished();
+                }
                 // IAB is fully set up. Now, let's get an inventory of stuff we own.
                 Log.d(TAG, "Setup successful. Querying inventory.");
                 queryPurchases();
@@ -115,7 +117,9 @@ public class BillingManager implements PurchasesUpdatedListener {
             for (Purchase purchase : purchases) {
                 handlePurchase(purchase);
             }
-            mBillingUpdatesListener.onPurchasesUpdated(mPurchases);
+            if (mBillingUpdatesListener != null) {
+                mBillingUpdatesListener.onPurchasesUpdated(mPurchases);
+            }
         } else if (resultCode == BillingResponse.USER_CANCELED) {
             Log.i(TAG, "onPurchasesUpdated() - user cancelled the purchase flow - skipping");
         } else {
@@ -205,7 +209,9 @@ public class BillingManager implements PurchasesUpdatedListener {
             public void onConsumeResponse(@BillingResponse int responseCode, String purchaseToken) {
                 // If billing service was disconnected, we try to reconnect 1 time
                 // (feel free to introduce your retry policy here).
-                mBillingUpdatesListener.onConsumeFinished(purchaseToken, responseCode);
+                if (mBillingUpdatesListener != null) {
+                    mBillingUpdatesListener.onConsumeFinished(purchaseToken, responseCode);
+                }
             }
         };
 

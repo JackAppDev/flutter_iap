@@ -4,12 +4,12 @@ PODS:
     - Flutter
 
 DEPENDENCIES:
-  - Flutter (from `Pods/.symlinks/flutter/ios`)
+  - Flutter (from `Pods/.symlinks/flutter/ios-release`)
   - flutter_iap (from `Pods/.symlinks/plugins/flutter_iap/ios`)
 
 EXTERNAL SOURCES:
   Flutter:
-    :path: Pods/.symlinks/flutter/ios
+    :path: Pods/.symlinks/flutter/ios-release
   flutter_iap:
     :path: Pods/.symlinks/plugins/flutter_iap/ios
 
@@ -19,4 +19,4 @@ SPEC CHECKSUMS:
 
 PODFILE CHECKSUM: ea0518673586564c605fb6593d385c0e3708ff8d
 
-COCOAPODS: 1.4.0
+COCOAPODS: 1.5.3
