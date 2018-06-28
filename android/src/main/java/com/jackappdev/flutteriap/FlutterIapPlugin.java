@@ -107,16 +107,18 @@ public class FlutterIapPlugin implements MethodCallHandler {
                 public void onSkuDetailsResponse(int responseCode,
                                                  List<SkuDetails> skuDetailsList) {
                     StringBuilder sb = new StringBuilder("[");
-                    for (SkuDetails details:skuDetailsList) {
-                        if (sb.length() > 0){
-                            sb.append(",");
+                    if (skuDetailsList != null) {
+                        for (SkuDetails details: skuDetailsList) {
+                            if (sb.length() > 0) {
+                                sb.append(",");
+                            }
+                            sb.append("{\"localizedDescription\":\""+details.getDescription()+"\"");
+                            sb.append(",\"localizedTitle\":\""+details.getTitle()+"\"");
+                            sb.append(",\"price\":\""+details.getPrice()+"\"");
+                            sb.append(",\"priceLocale\":\""+details.getPriceCurrencyCode()+"\"");
+                            sb.append(",\"localizedPrice\":\""+details.getPrice()+"\"");
+                            sb.append(",\"productIdentifier\":\""+details.getSku()+"\"}");
                         }
-                        sb.append("{\"localizedDescription\":\""+details.getDescription()+"\"");
-                        sb.append(",\"localizedTitle\":\""+details.getTitle()+"\"");
-                        sb.append(",\"price\":\""+details.getPrice()+"\"");
-                        sb.append(",\"priceLocale\":\""+details.getPriceCurrencyCode()+"\"");
-                        sb.append(",\"localizedPrice\":\""+details.getPrice()+"\"");
-                        sb.append(",\"productIdentifier\":\""+details.getSku()+"\"}");
                     }
                     sb.append("]");
                     result.success("{\"status\":\"loaded\",\"products\":"+sb.toString()+"}");
