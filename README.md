@@ -1,6 +1,7 @@
 # flutter_iap
 
 Add _In-App Payments_ to your Flutter app with this plugin.
+
 - You can fetch IAP products from Google Play and App Store
 - You can buy an IAP product
 - You can restore purchases from App Store (only iOS)
@@ -19,6 +20,10 @@ Add ```flutter_iap``` as a dependency in pubspec.yaml
 For help on adding as a dependency, view the [documentation](https://flutter.io/using-packages/).
 
 ## Example
+
+> Note: You must set up billing information in your developer account corresponding with the platform you are testing (iTunes Connect / Google Play Console)
+> This example will not work unless you do the above
+
 ```dart
 import 'package:flutter/material.dart';
 import 'package:flutter_iap/flutter_iap.dart';
