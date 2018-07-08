@@ -6,6 +6,15 @@ import 'package:flutter/services.dart';
 class FlutterIap {
   static const MethodChannel _channel = const MethodChannel('flutter_iap');
 
+  /// Retrieve a list of SKUs which have been purchased previously.
+  static Future<List<String>> fetchInventory() async {
+    String result = await _channel.invokeMethod("inventory");
+    Map<String, dynamic> map = json.decode(result);
+
+    List<dynamic> dynamicList = map["skus"];
+    return Future.value(dynamicList.map<String>((f) => f.toString()).toList());
+  }
+
   static Future<IAPResponse> fetchProducts(List<String> ids) async {
     String result = await _channel.invokeMethod("fetch", ids);
     return stringToResponse(result);
