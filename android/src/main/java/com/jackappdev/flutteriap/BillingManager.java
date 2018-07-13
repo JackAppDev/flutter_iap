@@ -168,8 +168,9 @@ public class BillingManager implements PurchasesUpdatedListener {
         }
     }
 
-    public void querySkuDetailsAsync(@SkuType final String itemType, final List<String> skuList,
-                                     final SkuDetailsResponseListener listener) {
+    public void querySkuDetailsAsync(@SkuType final String itemType, final List<String> skuList) {
+        Log.d(TAG, "Querying SKU details.");
+
         // Creating a runnable from the request to use it inside our connection retry policy below
         Runnable queryRequest = new Runnable() {
             @Override
@@ -182,7 +183,11 @@ public class BillingManager implements PurchasesUpdatedListener {
                             @Override
                             public void onSkuDetailsResponse(int responseCode,
                                                              List<SkuDetails> skuDetailsList) {
-                                listener.onSkuDetailsResponse(responseCode, skuDetailsList);
+                                Log.d(TAG, "Received SKU details.");
+                                if (mSkuDetailsResponseListener != null) {
+                                    mSkuDetailsResponseListener
+                                        .onSkuDetailsResponse(responseCode, skuDetailsList);
+                                }
                             }
                         });
             }

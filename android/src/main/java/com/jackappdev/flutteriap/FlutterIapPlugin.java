@@ -11,6 +11,7 @@ import com.android.billingclient.api.SkuDetails;
 import com.android.billingclient.api.SkuDetailsParams;
 import com.android.billingclient.api.SkuDetailsResponseListener;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import io.flutter.plugin.common.MethodCall;
@@ -78,54 +79,118 @@ public class FlutterIapPlugin implements MethodCallHandler {
 
     @Override
     public void onMethodCall(final MethodCall call, final Result result) {
-        if (call.method.equals("buy")) {
-            billingManager = new BillingManager(activity, new BillingManager.BillingUpdatesListener() {
-                @Override
-                public void onBillingClientSetupFinished() {
-                    billingManager.initiatePurchaseFlow((String) call.arguments, BillingClient.SkuType.INAPP);
-                }
+        if (billingManager != null) {
+            billingManager.destroy();
+            billingManager = null;
+        }
 
-                @Override
-                public void onConsumeFinished(String token, @BillingClient.BillingResponse int result) {
-                    Log.e("token", token);
-                }
 
-                @Override
-                public void onPurchasesUpdated(List<Purchase> purchases) {
-                    Log.e("purchases", purchases.toString());
-                    if (purchases.size() > 0) {
-                        Purchase p = purchases.get(0);
-                        Log.e("Consuming", p.getSku());
-                        billingManager.consumeAsync(p.getPurchaseToken());
-                        result.success(jsonFromString("purchased"));
+        if (call.method.equals("inventory")) {
+            billingManager =
+                new BillingManager(activity, new BillingManager.BillingUpdatesListener() {
+                    @Override
+                    public void onBillingClientSetupFinished() {
                     }
-                }
-            }, null);
-        } else if (call.method.equals("fetch")) {
-            billingManager = new BillingManager(activity, null, new SkuDetailsResponseListener() {
-                @Override
-                public void onSkuDetailsResponse(int responseCode,
-                                                 List<SkuDetails> skuDetailsList) {
-                    StringBuilder sb = new StringBuilder("[");
-                    if (skuDetailsList != null) {
-                        for (SkuDetails details: skuDetailsList) {
-                            if (sb.length() > 0) {
-                                sb.append(",");
+
+                    @Override
+                    public void onConsumeFinished(String token,
+                                                  @BillingClient.BillingResponse int result) {
+                        Log.e("token", token);
+                    }
+
+                    @Override
+                    public void onPurchasesUpdated(List<Purchase> purchases) {
+                        StringBuilder sb = new StringBuilder("[");
+
+                        if (purchases != null) {
+                            for (Purchase purchase : purchases) {
+                                if (sb.length() > 1) {
+                                    sb.append(",");
+                                }
+                                sb.append("\"" + purchase.getSku() + "\"");
                             }
-                            sb.append("{\"localizedDescription\":\""+details.getDescription()+"\"");
-                            sb.append(",\"localizedTitle\":\""+details.getTitle()+"\"");
-                            sb.append(",\"price\":\""+details.getPrice()+"\"");
-                            sb.append(",\"priceLocale\":\""+details.getPriceCurrencyCode()+"\"");
-                            sb.append(",\"localizedPrice\":\""+details.getPrice()+"\"");
-                            sb.append(",\"productIdentifier\":\""+details.getSku()+"\"}");
+                        }
+
+                        sb.append("]");
+                        result
+                            .success("{\"status\":\"loaded\",\"skus\":" + sb.toString() + "}");
+
+                    }
+                }, null);
+        } else if (call.method.equals("buy")) {
+            billingManager =
+                new BillingManager(activity, new BillingManager.BillingUpdatesListener() {
+                    @Override
+                    public void onBillingClientSetupFinished() {
+                        billingManager.initiatePurchaseFlow(
+                            (String) call.arguments,
+                            BillingClient.SkuType.INAPP);
+                    }
+
+                    @Override
+                    public void onConsumeFinished(String token,
+                                                  @BillingClient.BillingResponse int result) {
+                        Log.e("token", token);
+                    }
+
+                    @Override
+                    public void onPurchasesUpdated(List<Purchase> purchases) {
+                        Log.e("purchases", purchases.toString());
+                        if (purchases.size() > 0) {
+                            Purchase p = purchases.get(0);
+                            Log.e("Consuming", p.getSku());
+                            billingManager.consumeAsync(p.getPurchaseToken());
+                            result.success(jsonFromString("purchased"));
                         }
                     }
-                    sb.append("]");
-                    result.success("{\"status\":\"loaded\",\"products\":"+sb.toString()+"}");
-                }
+                }, null);
+        } else if (call.method.equals("fetch")) {
+            billingManager = new BillingManager(
+                activity,
+                new BillingManager.BillingUpdatesListener() {
+                    @Override
+                    public void onBillingClientSetupFinished() {
+                        billingManager.querySKUProducts((List<String>) call.arguments);
 
-            });
-            billingManager.querySKUProducts((List<String>) call.arguments);
+                    }
+
+                    @Override
+                    public void onConsumeFinished(String token, int result) {
+
+                    }
+
+                    @Override
+                    public void onPurchasesUpdated(List<Purchase> purchases) {
+
+                    }
+                },
+                new SkuDetailsResponseListener() {
+                    @Override
+                    public void onSkuDetailsResponse(int responseCode,
+                                                     List<SkuDetails> skuDetailsList) {
+                        StringBuilder sb = new StringBuilder("[");
+                        if (skuDetailsList != null) {
+                            for (SkuDetails details : skuDetailsList) {
+                                if (sb.length() > 1) {
+                                    sb.append(",");
+                                }
+                                sb.append("{\"localizedDescription\":\"" + details
+                                    .getDescription() + "\"");
+                                sb.append(",\"localizedTitle\":\"" + details.getTitle() + "\"");
+                                sb.append(",\"price\":\"" + details.getPrice() + "\"");
+                                sb.append(",\"priceLocale\":\"" + details
+                                    .getPriceCurrencyCode() + "\"");
+                                sb.append(",\"localizedPrice\":\"" + details.getPrice() + "\"");
+                                sb.append(",\"productIdentifier\":\"" + details.getSku() + "\"}");
+                            }
+                        }
+                        sb.append("]");
+                        result
+                            .success("{\"status\":\"loaded\",\"products\":" + sb.toString() + "}");
+                    }
+
+                }
+            );
         }
     }
 
