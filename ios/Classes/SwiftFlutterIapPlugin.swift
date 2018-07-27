@@ -98,9 +98,8 @@ extension IAPHandler: SKProductsRequestDelegate, SKPaymentTransactionObserver {
       for product in response.products {
         if result.count > 1{
             result.append(",")
-        }else{
-            result.append("\(jsonFromProduct(product: product))")
         }
+        result.append("\(jsonFromProduct(product: product))")
       }
     }
     result.append("]")
