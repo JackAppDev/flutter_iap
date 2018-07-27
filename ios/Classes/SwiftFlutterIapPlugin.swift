@@ -96,6 +96,7 @@ extension IAPHandler: SKProductsRequestDelegate, SKPaymentTransactionObserver {
     var result : String = "["
     if (response.products.count > 0) {
       for product in response.products {
+        iapProducts[product.productIdentifier] = product
         if result.count > 1{
             result.append(",")
         }
