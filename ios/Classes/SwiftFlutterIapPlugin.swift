@@ -95,6 +95,7 @@ extension IAPHandler: SKProductsRequestDelegate, SKPaymentTransactionObserver {
   func productsRequest (_ request:SKProductsRequest, didReceive response:SKProductsResponse) {
     var products = []
     for product in response.products {
+      iapProducts[product.productIdentifier] = product
       products.append(jsonFromProduct(product: product))
     }
     if let fetchResult = purchaseStatusBlock {
