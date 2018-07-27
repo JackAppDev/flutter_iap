@@ -93,18 +93,12 @@ class IAPHandler: NSObject {
 
 extension IAPHandler: SKProductsRequestDelegate, SKPaymentTransactionObserver {
   func productsRequest (_ request:SKProductsRequest, didReceive response:SKProductsResponse) {
-    var result : String = "["
-    if (response.products.count > 0) {
-      for product in response.products {
-        if result.count > 1{
-            result.append(",")
-        }
-        result.append("\(jsonFromProduct(product: product))")
-      }
+    var products = []
+    for product in response.products {
+      products.append(jsonFromProduct(product: product))
     }
-    result.append("]")
     if let fetchResult = purchaseStatusBlock {
-        fetchResult("{\"status\":\"loaded\",\"products\":\(result)}")
+        fetchResult("{\"status\":\"loaded\",\"products\":[\(products.joined(separator: ","))]}")
     }
   }
   
