@@ -93,7 +93,7 @@ class IAPHandler: NSObject {
 
 extension IAPHandler: SKProductsRequestDelegate, SKPaymentTransactionObserver {
   func productsRequest (_ request:SKProductsRequest, didReceive response:SKProductsResponse) {
-    var products = []
+    var products: [String] = []
     for product in response.products {
       iapProducts[product.productIdentifier] = product
       products.append(jsonFromProduct(product: product))
