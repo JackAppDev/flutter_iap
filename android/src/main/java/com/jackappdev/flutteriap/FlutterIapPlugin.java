@@ -98,7 +98,7 @@ public class FlutterIapPlugin implements MethodCallHandler {
           StringBuilder sb = new StringBuilder("[");
 
           if (purchases != null) {
-            for (Purchase purchase : purchases) {
+            for (Purchase p : purchases) {
               if (sb.length() > 1) {
                 sb.append(",");
               }
