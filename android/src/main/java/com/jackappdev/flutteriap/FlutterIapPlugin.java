@@ -172,6 +172,7 @@ public class FlutterIapPlugin implements MethodCallHandler {
               sb.append("\"price\":\"" + details.getPrice() + "\",");
               sb.append("\"priceLocale\":\"" + details.getPriceCurrencyCode() + "\",");
               sb.append("\"localizedPrice\":\"" + details.getPrice() + "\",");
+              sb.append("\"type\":\"" + details.getType() + "\",");
               sb.append("\"productIdentifier\":\"" + details.getSku() + "\"");
               sb.append("}");
             }

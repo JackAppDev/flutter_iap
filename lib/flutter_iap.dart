@@ -5,30 +5,21 @@ import 'package:flutter/services.dart';
 
 class FlutterIap {
   static const MethodChannel _channel = const MethodChannel('flutter_iap');
+  static Future<IAPResponse> _respond(String method, [args]) async =>
+      new IAPResponse(await _channel.invokeMethod(method, args));
 
   /// Android only: Retrieve a list of products which have been purchased previously.
-  static Future<IAPResponse> fetchInventory() async {
-    String result = await _channel.invokeMethod("inventory");
-    return new IAPResponse(result);
-  }
+  static Future<IAPResponse> fetchInventory() async => _respond("inventory");
 
   /// Retrieve a list of products available for purchase.
-  static Future<IAPResponse> fetchProducts(List<String> ids) async {
-    String result = await _channel.invokeMethod("fetch", ids);
-    return new IAPResponse(result);
-  }
+  static Future<IAPResponse> fetchProducts(List<String> ids) async =>
+      _respond("fetch", ids);
 
   /// Starts the purchase process
-  static Future<IAPResponse> buy(String id) async {
-    String result = await _channel.invokeMethod("buy", id);
-    return new IAPResponse(result);
-  }
+  static Future<IAPResponse> buy(String id) async => _respond("buy", id);
 
   /// iOS only: Restore previous purchases
-  static Future<IAPResponse> restorePurchases() async {
-    String result = await _channel.invokeMethod("restore");
-    return new IAPResponse(result);
-  }
+  static Future<IAPResponse> restorePurchases() async => _respond("restore");
 }
 
 class IAPResponse {
@@ -36,7 +27,8 @@ class IAPResponse {
   List<IAPProduct> products;
   List<IAPPurchase> purchases;
 
-  factory IAPResponse(String source) => new IAPResponse.fromJSON(json.decode(source));
+  factory IAPResponse(String source) =>
+      new IAPResponse.fromJSON(json.decode(source));
 
   IAPResponse.fromJSON(Map<String, dynamic> json) : status = json['status'] {
     if (json['products'] != null) {
@@ -73,6 +65,7 @@ class IAPProduct {
   final bool isDownloadable;
   final String downloadContentLengths;
   final String downloadContentVersion;
+  final String type;
 
   IAPProduct.fromJSON(Map<String, dynamic> json)
       : localizedDescription = json['localizedDescription'],
@@ -83,5 +76,6 @@ class IAPProduct {
         productIdentifier = json['productIdentifier'],
         isDownloadable = json['isDownloadable'],
         downloadContentLengths = json['downloadContentLengths'],
-        downloadContentVersion = json['downloadContentVersion'];
+        downloadContentVersion = json['downloadContentVersion'],
+        type = json["type"];
 }
