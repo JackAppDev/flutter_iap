@@ -53,28 +53,35 @@ class _MyAppState extends State<MyApp> {
         .map((IAPProduct product) => product.productIdentifier)
         .toList();
 
-    List<String> purchased = await FlutterIap.fetchInventory();
+    IAPResponse purchased = await FlutterIap.fetchInventory();
+    List<String> purchasedIds = purchased.purchases
+        .map((IAPPurchase purchase) => purchase.productIdentifier)
+        .toList();
 
     if (!mounted) return;
 
     setState(() {
       _productIds = productIds;
-      _alreadyPurchased = purchased;
+      _alreadyPurchased = purchasedIds;
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    String nextPurchase =
-        _productIds.firstWhere((id) => !_alreadyPurchased.contains(id));
+    String nextPurchase = _productIds.firstWhere(
+      (id) => !_alreadyPurchased.contains(id),
+      orElse: () => null,
+    );
 
     List<Text> list = [];
     _alreadyPurchased.forEach((productId) {
-      list.add(Text(productId));
+      list.add(new Text(productId));
     });
 
     if (list.isEmpty) {
-      list.add(Text("No previous purchases found."));
+      list.add(new Text("No previous purchases found."));
+    } else {
+      list.insert(0, new Text("Already purchased:"));
     }
 
     return new MaterialApp(
@@ -83,24 +90,22 @@ class _MyAppState extends State<MyApp> {
           title: new Text("flutter_iap example app"),
         ),
         body: new Center(
-          child: Column(
+          child: new Column(
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
-                  new Text(
-                    _productIds.isNotEmpty
-                        ? "Fetched: $_productIds"
-                        : "Not working?\n"
-                        "Check that you set up in app purchases in\n"
-                        "iTunes Connect / Google Play Console",
-                    textAlign: TextAlign.center,
-                    textScaleFactor: 1.25,
-                  ),
-                  SizedBox(
-                    height: 24.0,
-                  ),
-                  Text("Already purchased:"),
-                ] +
-                list,
+              new Text(
+                _productIds.isNotEmpty
+                    ? "Fetched: $_productIds"
+                    : "Not working?\n"
+                    "Check that you set up in app purchases in\n"
+                    "iTunes Connect / Google Play Console",
+                textAlign: TextAlign.center,
+                textScaleFactor: 1.25,
+              ),
+              new SizedBox(
+                height: 24.0,
+              ),
+            ].followedBy(list),
           ),
         ),
         floatingActionButton: nextPurchase != null
