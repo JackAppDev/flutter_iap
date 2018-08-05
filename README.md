@@ -105,7 +105,7 @@ class _MyAppState extends State<MyApp> {
               new SizedBox(
                 height: 24.0,
               ),
-            ].followedBy(list),
+            ].followedBy(list).toList(),
           ),
         ),
         floatingActionButton: nextPurchase != null
