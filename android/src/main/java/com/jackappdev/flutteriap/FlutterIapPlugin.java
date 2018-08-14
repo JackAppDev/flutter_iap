@@ -4,22 +4,17 @@ import android.app.Activity;
 import android.app.Application;
 import android.os.Bundle;
 import android.util.Log;
-
 import com.android.billingclient.api.BillingClient;
 import com.android.billingclient.api.Purchase;
 import com.android.billingclient.api.SkuDetails;
-import com.android.billingclient.api.SkuDetailsParams;
 import com.android.billingclient.api.SkuDetailsResponseListener;
-
-import java.util.ArrayList;
-import java.util.List;
-
+import org.json.JSONObject;
 import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
 import io.flutter.plugin.common.MethodChannel.Result;
-import io.flutter.plugin.common.PluginRegistry;
 import io.flutter.plugin.common.PluginRegistry.Registrar;
+import java.util.List;
 
 /**
  * FlutterIapPlugin
@@ -35,45 +30,46 @@ public class FlutterIapPlugin implements MethodCallHandler {
 
   private FlutterIapPlugin(final Activity activity) {
     this.activity = activity;
-    activity.getApplication().registerActivityLifecycleCallbacks(new Application.ActivityLifecycleCallbacks() {
-      @Override
-      public void onActivityCreated(Activity activity, Bundle savedInstanceState) {
+    activity.getApplication()
+        .registerActivityLifecycleCallbacks(new Application.ActivityLifecycleCallbacks() {
+          @Override
+          public void onActivityCreated(Activity activity, Bundle savedInstanceState) {
 
-      }
+          }
 
-      @Override
-      public void onActivityStarted(Activity activity) {
+          @Override
+          public void onActivityStarted(Activity activity) {
 
-      }
+          }
 
-      @Override
-      public void onActivityResumed(Activity activity) {
+          @Override
+          public void onActivityResumed(Activity activity) {
 
-      }
+          }
 
-      @Override
-      public void onActivityPaused(Activity activity) {
+          @Override
+          public void onActivityPaused(Activity activity) {
 
-      }
+          }
 
-      @Override
-      public void onActivityStopped(Activity activity) {
+          @Override
+          public void onActivityStopped(Activity activity) {
 
-      }
+          }
 
-      @Override
-      public void onActivitySaveInstanceState(Activity activity, Bundle outState) {
+          @Override
+          public void onActivitySaveInstanceState(Activity activity, Bundle outState) {
 
-      }
+          }
 
-      @Override
-      public void onActivityDestroyed(Activity activity) {
-        if (billingManager != null) {
-          billingManager.destroy();
-          billingManager = null;
-        }
-      }
-    });
+          @Override
+          public void onActivityDestroyed(Activity activity) {
+            if (billingManager != null) {
+              billingManager.destroy();
+              billingManager = null;
+            }
+          }
+        });
   }
 
   @Override
@@ -86,7 +82,9 @@ public class FlutterIapPlugin implements MethodCallHandler {
     if (call.method.equals("inventory")) { // gets skus
       billingManager = new BillingManager(activity, new BillingManager.BillingUpdatesListener() {
         @Override
-        public void onBillingClientSetupFinished() {}
+        public void onBillingClientSetupFinished() {
+          billingManager.queryPurchases();
+        }
 
         @Override
         public void onConsumeFinished(String token, @BillingClient.BillingResponse int result) {
@@ -104,12 +102,13 @@ public class FlutterIapPlugin implements MethodCallHandler {
               }
               sb.append("{");
               sb.append("\"signature\":\"" + p.getSignature() + "\",");
-              sb.append("\"originalJson\":\"" + p.getOriginalJson() + "\",");
-              sb.append("\"sku\":\"" + p.getSku() + "\"");
+              sb.append("\"originalJson\":" + JSONObject.quote(p.getOriginalJson()) + ",");
+              sb.append("\"productIdentifier\":\"" + p.getSku() + "\"");
               sb.append("}");
             }
           }
           sb.append("]");
+
           result.success("{\"status\":\"loaded\",\"purchases\":" + sb.toString() + "}");
         }
       }, null);
@@ -129,17 +128,30 @@ public class FlutterIapPlugin implements MethodCallHandler {
         public void onPurchasesUpdated(List<Purchase> purchases) {
           Log.e("purchases", purchases.toString());
           if (purchases.size() > 0) {
-            Purchase p = purchases.get(0);
-            Log.e("Consuming", p.getSku());
-            billingManager.consumeAsync(p.getPurchaseToken());
+            for (Purchase p : purchases) {
+              if (p.getSku().equalsIgnoreCase((String) call.arguments)) {
+                Log.e("Consuming", p.getSku());
+                billingManager.consumeAsync(p.getPurchaseToken());
+                break;
+              }
+            }
 
-            StringBuilder sb = new StringBuilder("{");
-            sb.append("\"signature\":\"" + p.getSignature() + "\",");
-            sb.append("\"originalJson\":\"" + p.getOriginalJson() + "\",");
-            sb.append("\"productIdentifier\":\"" + p.getSku() + "\"");
-            sb.append("}");
+            // TODO: Dry the code (see above).
+            StringBuilder sb = new StringBuilder("[");
 
-            result.success("{\"status\":\"loaded\",\"products\":" + sb.toString() + "}");
+            for (Purchase p : purchases) {
+              if (sb.length() > 1) {
+                sb.append(",");
+              }
+              sb.append("{");
+              sb.append("\"signature\":\"" + p.getSignature() + "\",");
+              sb.append("\"originalJson\":" + JSONObject.quote(p.getOriginalJson()) + ",");
+              sb.append("\"productIdentifier\":\"" + p.getSku() + "\"");
+              sb.append("}");
+            }
+            sb.append("]");
+
+            result.success("{\"status\":\"loaded\",\"purchases\":" + sb.toString() + "}");
           } else {
             result.error("ERROR", "Failed to buy", null);
           }
@@ -153,10 +165,12 @@ public class FlutterIapPlugin implements MethodCallHandler {
         }
 
         @Override
-        public void onConsumeFinished(String token, int result) {}
+        public void onConsumeFinished(String token, int result) {
+        }
 
         @Override
-        public void onPurchasesUpdated(List<Purchase> purchases) {}
+        public void onPurchasesUpdated(List<Purchase> purchases) {
+        }
       }, new SkuDetailsResponseListener() {
         @Override
         public void onSkuDetailsResponse(int responseCode, List<SkuDetails> skuDetailsList) {

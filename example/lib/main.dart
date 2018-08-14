@@ -19,6 +19,7 @@ class _MyAppState extends State<MyApp> {
   }
 
   init() async {
+    // Android testers: You can use "android.test.purchased" to simulate a successful flow.
     List<String> productIds = ["com.example.testiap"];
 
     IAPResponse response = await FlutterIap.fetchProducts(productIds);
@@ -68,7 +69,7 @@ class _MyAppState extends State<MyApp> {
             children: <Widget>[
               new Text(
                 _productIds.isNotEmpty
-                    ? "Fetched: $_productIds"
+                    ? "Available Products to purchase: $_productIds"
                     : "Not working?\n"
                     "Check that you set up in app purchases in\n"
                     "iTunes Connect / Google Play Console",
@@ -84,8 +85,17 @@ class _MyAppState extends State<MyApp> {
         floatingActionButton: nextPurchase != null
             ? new FloatingActionButton(
                 child: new Icon(Icons.monetization_on),
-                onPressed: () {
-                  FlutterIap.buy(nextPurchase);
+                onPressed: () async {
+                  IAPResponse response = await FlutterIap.buy(nextPurchase);
+                  if (response.purchases != null) {
+                    List<String> purchasedIds = response.purchases
+                        .map((IAPPurchase purchase) => purchase.productIdentifier)
+                        .toList();
+
+                    setState(() {
+                      _alreadyPurchased = purchasedIds;
+                    });
+                  }
                 },
               )
             : new Container(),
