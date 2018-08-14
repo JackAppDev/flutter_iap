@@ -109,9 +109,6 @@ public class BillingManager implements PurchasesUpdatedListener {
         if (mBillingUpdatesListener != null) {
           mBillingUpdatesListener.onBillingClientSetupFinished();
         }
-        // IAB is fully set up. Now, let's get an inventory of stuff we own.
-        Log.d(TAG, "Setup successful. Querying inventory.");
-        queryPurchases();
       }
     });
   }
@@ -145,14 +142,14 @@ public class BillingManager implements PurchasesUpdatedListener {
   /**
    * Start a purchase or subscription replace flow
    */
-  public void initiatePurchaseFlow(final String skuId, final ArrayList<String> oldSkus,
+  public void initiatePurchaseFlow(final String skuId, final String oldSku,
       final @SkuType String billingType) {
     Runnable purchaseFlowRequest = new Runnable() {
       @Override
       public void run() {
-        Log.d(TAG, "Launching in-app purchase flow. Replace old SKU? " + (oldSkus != null));
+        Log.d(TAG, "Launching in-app purchase flow. Replace old SKU? " + (oldSku != null));
         BillingFlowParams purchaseParams = BillingFlowParams.newBuilder().setSku(skuId).setType(billingType)
-            .setOldSkus(oldSkus).build();
+            .setOldSku(oldSku).build();
         mBillingClient.launchBillingFlow(mActivity, purchaseParams);
       }
     };
