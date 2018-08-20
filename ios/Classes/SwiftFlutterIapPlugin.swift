@@ -10,6 +10,8 @@ public class SwiftFlutterIapPlugin: NSObject, FlutterPlugin {
 
   public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
     switch call.method {
+    case "inventory":
+      result("{\"status\":\"loaded\",\"purchases\":[]}")
     case "fetch":
       IAPHandler.shared.purchaseStatusBlock = result
       IAPHandler.shared.fetchAvailableProducts(call.arguments as! [String], result)
@@ -98,9 +100,8 @@ extension IAPHandler: SKProductsRequestDelegate, SKPaymentTransactionObserver {
       iapProducts[product.productIdentifier] = product
       products.append(jsonFromProduct(product: product))
     }
-    if let fetchResult = purchaseStatusBlock {
-        fetchResult("{\"status\":\"loaded\",\"products\":[\(products.joined(separator: ","))]}")
-    }
+    
+    purchaseStatusBlock?("{\"status\":\"loaded\",\"products\":[\(products.joined(separator: ","))]}")
   }
   
   func paymentQueueRestoreCompletedTransactionsFinished(_ queue: SKPaymentQueue) {
@@ -108,7 +109,7 @@ extension IAPHandler: SKProductsRequestDelegate, SKPaymentTransactionObserver {
   }
   
   func paymentQueue(_ queue: SKPaymentQueue, updatedTransactions transactions: [SKPaymentTransaction]) {
-    var restoredIds : String = "";
+    var restoredIds : [String] = [];
     for transaction:AnyObject in transactions {
       if let trans = transaction as? SKPaymentTransaction {
         switch trans.transactionState {
@@ -122,15 +123,16 @@ extension IAPHandler: SKProductsRequestDelegate, SKPaymentTransactionObserver {
             break
           case .restored:
             SKPaymentQueue.default().finishTransaction(transaction as! SKPaymentTransaction)
-            restoredIds.append(restoredIds.count == 0 ? trans.transactionIdentifier ?? "" : ",\(trans.transactionIdentifier ?? "")")
+            restoredIds.append("{\"productIdentifier\": \"\(trans.payment.productIdentifier)\"}")
             break
         default: 
           break
         }
       }
     }
+
     if restoredIds.count > 0 {
-        purchaseStatusBlock?(restoredIds)
+        purchaseStatusBlock?("{\"status\":\"loaded\",\"purchases\":[" + restoredIds.joined(separator: ",") + "]}")
     }
   }
 }
