@@ -10,3 +10,7 @@ build/
 .project
 .classpath
 .settings
+.idea
+
+
+example/test/
