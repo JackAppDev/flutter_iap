@@ -121,3 +121,13 @@ class _MyAppState extends State<MyApp> {
   }
 }
 ```
+
+## Contributing
+
+This project welcomes PRs to fix issues and improve functionality.
+
+To get started, clone the git repository to a local directory (`flutter_iap`), and run:
+
+```
+$ flutter create --template=plugin .
+```
