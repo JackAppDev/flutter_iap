@@ -34,7 +34,10 @@ class IAPHandler: NSObject {
   fileprivate var productID = ""
   fileprivate var productsRequest = SKProductsRequest()
   fileprivate var iapProducts = [String : SKProduct]()
-  
+    
+    // temporary variable to hold the restored IDs.
+  fileprivate var restoredIds : [String] = []
+    
   var purchaseStatusBlock: ((String) -> Void)?
   
   func canMakePurchases() -> Bool {  return SKPaymentQueue.canMakePayments()  }
@@ -58,20 +61,24 @@ class IAPHandler: NSObject {
   }
   
   func restorePurchase() {
+    restoredIds.removeAll()
+    
     SKPaymentQueue.default().add(self)
     SKPaymentQueue.default().restoreCompletedTransactions()
   }
   
   func fetchAvailableProducts(_ ids: [String], _ completion: ([Any]) -> ()) {
-    let productIdentifiers = NSSet(array: ids)
-    
-    productsRequest = SKProductsRequest(productIdentifiers: productIdentifiers as! Set<String>)
+    productsRequest = SKProductsRequest(productIdentifiers: Set(ids))
     productsRequest.delegate = self
     productsRequest.start()
   }
     
     func jsonFromString(status: String) -> String{
         return "{\"status\":\"\(status)\"}"
+    }
+    
+    func jsonFromError(_ error: Error) -> String{
+        return "{\"status\":\"failed\",\"message\":\"\(error.localizedDescription)\"}"
     }
     
     func jsonFromProduct(product: SKProduct) -> String{
@@ -93,23 +100,35 @@ class IAPHandler: NSObject {
     }
 }
 
-extension IAPHandler: SKProductsRequestDelegate, SKPaymentTransactionObserver {
-  func productsRequest (_ request:SKProductsRequest, didReceive response:SKProductsResponse) {
-    var products: [String] = []
-    for product in response.products {
-      iapProducts[product.productIdentifier] = product
-      products.append(jsonFromProduct(product: product))
+extension IAPHandler: SKProductsRequestDelegate {
+    func productsRequest (_ request:SKProductsRequest, didReceive response:SKProductsResponse) {
+        var products: [String] = []
+        for product in response.products {
+            iapProducts[product.productIdentifier] = product
+            products.append(jsonFromProduct(product: product))
+        }
+        for ip in response.invalidProductIdentifiers {
+            NSLog("invalid product identifier: \(ip)")
+        }
+        
+        purchaseStatusBlock?("{\"status\":\"loaded\",\"products\":[\(products.joined(separator: ","))]}")
     }
-    
-    purchaseStatusBlock?("{\"status\":\"loaded\",\"products\":[\(products.joined(separator: ","))]}")
-  }
+}
+
+extension IAPHandler: SKPaymentTransactionObserver {
   
   func paymentQueueRestoreCompletedTransactionsFinished(_ queue: SKPaymentQueue) {
-    purchaseStatusBlock?(jsonFromString(status: "restored"))
-  }
+    NSLog("restore completed.")
+    purchaseStatusBlock?("{\"status\":\"loaded\",\"purchases\":[" + restoredIds.joined(separator: ",") + "]}")
+    }
+    
+    func paymentQueue(_ queue: SKPaymentQueue, restoreCompletedTransactionsFailedWithError error: Error) {
+        NSLog("can not restore transactions: \(error)")
+        purchaseStatusBlock?(jsonFromError(error))
+    }
   
   func paymentQueue(_ queue: SKPaymentQueue, updatedTransactions transactions: [SKPaymentTransaction]) {
-    var restoredIds : [String] = [];
+    NSLog("updated transactions: \(transactions)")
     for transaction:AnyObject in transactions {
       if let trans = transaction as? SKPaymentTransaction {
         switch trans.transactionState {
@@ -129,10 +148,6 @@ extension IAPHandler: SKProductsRequestDelegate, SKPaymentTransactionObserver {
           break
         }
       }
-    }
-
-    if restoredIds.count > 0 {
-        purchaseStatusBlock?("{\"status\":\"loaded\",\"purchases\":[" + restoredIds.joined(separator: ",") + "]}")
     }
   }
 }
