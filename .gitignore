@@ -11,3 +11,6 @@ build/
 .classpath
 .settings
 .idea
+
+
+example/test/
