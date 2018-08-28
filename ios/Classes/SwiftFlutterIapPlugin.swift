@@ -126,15 +126,13 @@ extension IAPHandler: SKPaymentTransactionObserver {
     }
   
   func paymentQueue(_ queue: SKPaymentQueue, updatedTransactions transactions: [SKPaymentTransaction]) {
-    NSLog("updated transactions: \(transactions)")
     for transaction:AnyObject in transactions {
       if let trans = transaction as? SKPaymentTransaction {
         switch trans.transactionState {
           case .purchased:
             SKPaymentQueue.default().finishTransaction(trans)
 
-            // Currently no need to store this in a array.
-            let productIds = [trans.payment.productIdentifier]
+            let productIds = [ "{\"productIdentifier\": \"\(trans.payment.productIdentifier)\"}" ]
 
             purchaseStatusBlock?("{\"status\":\"loaded\",\"purchases\":[" + productIds.joined(separator: ",") + "]}")
             break
