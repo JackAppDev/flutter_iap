@@ -118,12 +118,10 @@ extension IAPHandler: SKProductsRequestDelegate {
 extension IAPHandler: SKPaymentTransactionObserver {
   
   func paymentQueueRestoreCompletedTransactionsFinished(_ queue: SKPaymentQueue) {
-    NSLog("restore completed.")
     purchaseStatusBlock?("{\"status\":\"loaded\",\"purchases\":[" + restoredIds.joined(separator: ",") + "]}")
     }
     
     func paymentQueue(_ queue: SKPaymentQueue, restoreCompletedTransactionsFailedWithError error: Error) {
-        NSLog("can not restore transactions: \(error)")
         purchaseStatusBlock?(jsonFromError(error))
     }
   
@@ -133,8 +131,12 @@ extension IAPHandler: SKPaymentTransactionObserver {
       if let trans = transaction as? SKPaymentTransaction {
         switch trans.transactionState {
           case .purchased:
-            SKPaymentQueue.default().finishTransaction(transaction as! SKPaymentTransaction)
-            purchaseStatusBlock?(jsonFromString(status: "purchased"))
+            SKPaymentQueue.default().finishTransaction(trans)
+
+            // Currently no need to store this in a array.
+            let productIds = [trans.payment.productIdentifier]
+
+            purchaseStatusBlock?("{\"status\":\"loaded\",\"purchases\":[" + productIds.joined(separator: ",") + "]}")
             break
           case .failed:
             SKPaymentQueue.default().finishTransaction(transaction as! SKPaymentTransaction)
