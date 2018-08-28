@@ -18,6 +18,9 @@ class FlutterIap {
   /// Starts the purchase process
   static Future<IAPResponse> buy(String id) async => _respond("buy", id);
 
+  /// Consumes a previously purchased item
+  static Future<IAPResponse> consume(String purchaseToken) async => _respond("consume", purchaseToken);
+
   /// iOS only: Restore previous purchases
   static Future<IAPResponse> restorePurchases() async => _respond("restore");
 }

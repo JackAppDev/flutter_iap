@@ -76,7 +76,7 @@ public class BillingManager implements PurchasesUpdatedListener {
   public interface BillingUpdatesListener {
     void onBillingClientSetupFinished();
 
-    void onConsumeFinished(String token, @BillingResponse int result);
+    void onConsumeFinished(String token, @BillingResponse int responseCode);
 
     void onPurchasesUpdated(List<Purchase> purchases);
   }
