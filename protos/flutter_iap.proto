@@ -1,0 +1,62 @@
+syntax = "proto2";
+
+option java_package = "com.jackappdev.flutteriap";
+
+enum IAPResponseStatus {
+    ok = 0;
+    error = 1;
+    // Library user needs to fetch the list of products from the store first.
+    emptyProductList = 2;
+
+    // In-App purchases not available (device or policy constraints etc)
+    disabled = 3;
+}
+
+enum IAPProductType {
+    iap = 0;
+    subscription = 1;
+}
+
+message IAPPurchase {
+  required string productIdentifier = 1;
+  required string signature = 2;
+  required string originalJson = 3;
+  required string orderId = 4;
+  required string packageName = 5;
+  required int64 purchaseTime = 6;
+  required string purchaseToken = 7;
+}
+
+// https://developer.apple.com/documentation/storekit/skproductdiscount/paymentmode
+enum IntroductoryPricePaymentMode {
+   payAsYouGo = 0;
+   payUpFront = 1;
+   freeTrial = 2; 
+}
+
+message IAPProduct {
+  required IAPProductType type = 1;
+  required string productIdentifier = 2;
+  required string localizedTitle = 3;
+  required string localizedDescription = 4;
+  required string price = 5;
+  required string priceLocale = 6;
+  required string localizedPrice = 7;
+  required bool isDownloadable = 8;
+  required string downloadContentLengths = 9;
+  required string downloadContentVersion = 10;
+  required string freeTrialPeriod = 11;
+
+  // Only applies to subscriptions.
+  required string subscriptionPeriod = 20;
+  required string introductoryPrice = 21;
+  required string introductoryPricePeriod = 22;
+  required string introductoryPriceCycles = 23;
+}
+
+message IAPResponse {
+    required IAPResponseStatus status = 1;
+    optional string statusMessage = 2;
+    repeated IAPPurchase purchases = 3;
+    repeated IAPProduct products = 4;
+}

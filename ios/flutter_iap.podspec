@@ -18,5 +18,6 @@ in app purchases for flutter
   s.swift_version = '4.0'
   
   s.ios.deployment_target = '8.0'
+  s.dependency 'SwiftProtobuf'
 end
 
