@@ -1,4 +1,4 @@
-part of flutter_blue;
+part of flutter_iap;
 
 class FlutterIap {
   static const MethodChannel _channel = const MethodChannel('flutter_iap');

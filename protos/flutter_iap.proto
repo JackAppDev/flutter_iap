@@ -59,12 +59,12 @@ message IAPPurchaseRequest {
 
 message IAPPurchase {
   required string productIdentifier = 1;
-  required string signature = 2;
-  required string originalJson = 3;
-  required string orderId = 4;
-  required string packageName = 5;
-  required int64 purchaseTime = 6;
-  required string purchaseToken = 7;
+  optional string signature = 2;
+  optional string originalJson = 3;
+  optional string orderId = 4;
+  optional string packageName = 5;
+  optional int64 purchaseTime = 6;
+  optional string purchaseToken = 7;
 }
 
 // https://developer.apple.com/documentation/storekit/skproductdiscount/paymentmode
@@ -77,21 +77,21 @@ enum IntroductoryPricePaymentMode {
 message IAPProduct {
   required IAPProductType type = 1;
   required string productIdentifier = 2;
-  required string localizedTitle = 3;
-  required string localizedDescription = 4;
-  required string price = 5;
-  required string priceLocale = 6;
-  required string localizedPrice = 7;
-  required bool isDownloadable = 8;
-  required string downloadContentLengths = 9;
-  required string downloadContentVersion = 10;
-  required string freeTrialPeriod = 11;
+  optional string localizedTitle = 3;
+  optional string localizedDescription = 4;
+  optional string price = 5;
+  optional string priceLocale = 6;
+  optional string localizedPrice = 7;
+  optional bool isDownloadable = 8;
+  optional string downloadContentLengths = 9;
+  optional string downloadContentVersion = 10;
+  optional string freeTrialPeriod = 11;
 
   // Only applies to subscriptions.
-  required string subscriptionPeriod = 20;
-  required string introductoryPrice = 21;
-  required string introductoryPricePeriod = 22;
-  required string introductoryPriceCycles = 23;
+  optional string subscriptionPeriod = 20;
+  optional string introductoryPrice = 21;
+  optional string introductoryPricePeriod = 22;
+  optional string introductoryPriceCycles = 23;
 }
 
 message IAPResponse {

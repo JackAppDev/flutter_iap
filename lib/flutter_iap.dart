@@ -1,4 +1,4 @@
-library flutter_blue;
+library flutter_iap;
 
 import 'dart:async';
 

@@ -583,12 +583,6 @@ extension IAPPurchase: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
 
   public var isInitialized: Bool {
     if self._productIdentifier == nil {return false}
-    if self._signature == nil {return false}
-    if self._originalJson == nil {return false}
-    if self._orderID == nil {return false}
-    if self._packageName == nil {return false}
-    if self._purchaseTime == nil {return false}
-    if self._purchaseToken == nil {return false}
     return true
   }
 
@@ -668,19 +662,6 @@ extension IAPProduct: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
   public var isInitialized: Bool {
     if self._type == nil {return false}
     if self._productIdentifier == nil {return false}
-    if self._localizedTitle == nil {return false}
-    if self._localizedDescription == nil {return false}
-    if self._price == nil {return false}
-    if self._priceLocale == nil {return false}
-    if self._localizedPrice == nil {return false}
-    if self._isDownloadable == nil {return false}
-    if self._downloadContentLengths == nil {return false}
-    if self._downloadContentVersion == nil {return false}
-    if self._freeTrialPeriod == nil {return false}
-    if self._subscriptionPeriod == nil {return false}
-    if self._introductoryPrice == nil {return false}
-    if self._introductoryPricePeriod == nil {return false}
-    if self._introductoryPriceCycles == nil {return false}
     return true
   }
 
