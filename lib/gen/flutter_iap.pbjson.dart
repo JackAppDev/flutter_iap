@@ -11,6 +11,13 @@ const IAPResponseStatus$json = const {
     const {'1': 'error', '2': 1},
     const {'1': 'emptyProductList', '2': 2},
     const {'1': 'disabled', '2': 3},
+    const {'1': 'userCanceled', '2': 4},
+    const {'1': 'serviceUnavailable', '2': 5},
+    const {'1': 'billingUnavailable', '2': 6},
+    const {'1': 'itemUnavailable', '2': 7},
+    const {'1': 'developerError', '2': 8},
+    const {'1': 'itemAlreadyOwned', '2': 9},
+    const {'1': 'itemNotOwned', '2': 10},
   ],
 };
 

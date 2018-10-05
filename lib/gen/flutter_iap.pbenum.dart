@@ -13,12 +13,26 @@ class IAPResponseStatus extends $pb.ProtobufEnum {
   static const IAPResponseStatus error = const IAPResponseStatus._(1, 'error');
   static const IAPResponseStatus emptyProductList = const IAPResponseStatus._(2, 'emptyProductList');
   static const IAPResponseStatus disabled = const IAPResponseStatus._(3, 'disabled');
+  static const IAPResponseStatus userCanceled = const IAPResponseStatus._(4, 'userCanceled');
+  static const IAPResponseStatus serviceUnavailable = const IAPResponseStatus._(5, 'serviceUnavailable');
+  static const IAPResponseStatus billingUnavailable = const IAPResponseStatus._(6, 'billingUnavailable');
+  static const IAPResponseStatus itemUnavailable = const IAPResponseStatus._(7, 'itemUnavailable');
+  static const IAPResponseStatus developerError = const IAPResponseStatus._(8, 'developerError');
+  static const IAPResponseStatus itemAlreadyOwned = const IAPResponseStatus._(9, 'itemAlreadyOwned');
+  static const IAPResponseStatus itemNotOwned = const IAPResponseStatus._(10, 'itemNotOwned');
 
   static const List<IAPResponseStatus> values = const <IAPResponseStatus> [
     ok,
     error,
     emptyProductList,
     disabled,
+    userCanceled,
+    serviceUnavailable,
+    billingUnavailable,
+    itemUnavailable,
+    developerError,
+    itemAlreadyOwned,
+    itemNotOwned,
   ];
 
   static final Map<int, IAPResponseStatus> _byValue = $pb.ProtobufEnum.initByValue(values);

@@ -8,6 +8,7 @@ environment:
   sdk: '>=1.23.0 <2.1.0'
 
 dependencies:
+  fixnum: any
   protobuf: any
   flutter:
     sdk: flutter

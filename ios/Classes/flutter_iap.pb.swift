@@ -19,16 +19,45 @@ fileprivate struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAP
   typealias Version = _2
 }
 
+/// Defines the response status for a IAP operation.
 enum IAPResponseStatus: SwiftProtobuf.Enum {
   typealias RawValue = Int
+
+  /// All went well, see the other fields for response details.
   case ok // = 0
+
+  /// Fatal error during the API action.
   case error // = 1
 
-  /// Library user needs to fetch the list of products from the store first.
+  /// (iOS only) Library user needs to fetch the list of products from the store first.
   case emptyProductList // = 2
 
-  /// In-App purchases not available (device or policy constraints etc)
+  /// In-App purchases not available (device or policy constraints etc).
+  /// TODO: Merge with [billingUnavailable]
   case disabled // = 3
+
+  /// User pressed back or canceled a dialog
+  case userCanceled // = 4
+
+  /// Network connection is down
+  case serviceUnavailable // = 5
+
+  /// Billing API version is not supported for the type requested
+  case billingUnavailable // = 6
+
+  /// Requested product is not available for purchase
+  case itemUnavailable // = 7
+
+  /// Invalid arguments provided to the API. This error can also indicate that the application was
+  /// not correctly signed or properly set up for In-app Billing in Google Play, or does not have
+  /// the necessary permissions in its manifest
+  case developerError // = 8
+
+  /// Failure to purchase since item is already owned
+  case itemAlreadyOwned // = 9
+
+  /// Failure to consume since item is not owned
+  case itemNotOwned // = 10
 
   init() {
     self = .ok
@@ -40,6 +69,13 @@ enum IAPResponseStatus: SwiftProtobuf.Enum {
     case 1: self = .error
     case 2: self = .emptyProductList
     case 3: self = .disabled
+    case 4: self = .userCanceled
+    case 5: self = .serviceUnavailable
+    case 6: self = .billingUnavailable
+    case 7: self = .itemUnavailable
+    case 8: self = .developerError
+    case 9: self = .itemAlreadyOwned
+    case 10: self = .itemNotOwned
     default: return nil
     }
   }
@@ -50,6 +86,13 @@ enum IAPResponseStatus: SwiftProtobuf.Enum {
     case .error: return 1
     case .emptyProductList: return 2
     case .disabled: return 3
+    case .userCanceled: return 4
+    case .serviceUnavailable: return 5
+    case .billingUnavailable: return 6
+    case .itemUnavailable: return 7
+    case .developerError: return 8
+    case .itemAlreadyOwned: return 9
+    case .itemNotOwned: return 10
     }
   }
 
@@ -66,11 +109,6 @@ extension IAPResponseStatus: CaseIterable {
 enum IAPProductType: SwiftProtobuf.Enum {
   typealias RawValue = Int
   case iap // = 0
-
-  /// consumableIap = 0;
-  /// nonConsumableIap = 1;
-  /// renewingSubscription = 2;
-  /// nonRenewingSubscription = 3;
   case subscription // = 1
 
   init() {
@@ -426,6 +464,13 @@ extension IAPResponseStatus: SwiftProtobuf._ProtoNameProviding {
     1: .same(proto: "error"),
     2: .same(proto: "emptyProductList"),
     3: .same(proto: "disabled"),
+    4: .same(proto: "userCanceled"),
+    5: .same(proto: "serviceUnavailable"),
+    6: .same(proto: "billingUnavailable"),
+    7: .same(proto: "itemUnavailable"),
+    8: .same(proto: "developerError"),
+    9: .same(proto: "itemAlreadyOwned"),
+    10: .same(proto: "itemNotOwned"),
   ]
 }
 

@@ -2,14 +2,43 @@ syntax = "proto2";
 
 option java_package = "com.jackappdev.flutteriap";
 
+// Defines the response status for a IAP operation.
 enum IAPResponseStatus {
+    // All went well, see the other fields for response details.
     ok = 0;
+
+    // Fatal error during the API action.
     error = 1;
-    // Library user needs to fetch the list of products from the store first.
+
+    // (iOS only) Library user needs to fetch the list of products from the store first.
     emptyProductList = 2;
 
-    // In-App purchases not available (device or policy constraints etc)
+    // In-App purchases not available (device or policy constraints etc).
+    // TODO: Merge with [billingUnavailable]
     disabled = 3;
+
+    // User pressed back or canceled a dialog
+    userCanceled = 4;
+
+    // Network connection is down
+    serviceUnavailable = 5;
+
+    // Billing API version is not supported for the type requested
+    billingUnavailable = 6;
+
+    // Requested product is not available for purchase
+    itemUnavailable = 7;
+
+    // Invalid arguments provided to the API. This error can also indicate that the application was
+    // not correctly signed or properly set up for In-app Billing in Google Play, or does not have
+    // the necessary permissions in its manifest
+    developerError = 8;
+
+    // Failure to purchase since item is already owned
+    itemAlreadyOwned = 9;
+
+    // Failure to consume since item is not owned
+    itemNotOwned = 10;
 }
 
 enum IAPProductType {
