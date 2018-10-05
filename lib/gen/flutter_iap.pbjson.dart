@@ -38,6 +38,14 @@ const IntroductoryPricePaymentMode$json = const {
   ],
 };
 
+const IAPPurchaseRequest$json = const {
+  '1': 'IAPPurchaseRequest',
+  '2': const [
+    const {'1': 'productIdentifier', '3': 1, '4': 2, '5': 9, '10': 'productIdentifier'},
+    const {'1': 'type', '3': 2, '4': 2, '5': 14, '6': '.IAPProductType', '10': 'type'},
+  ],
+};
+
 const IAPPurchase$json = const {
   '1': 'IAPPurchase',
   '2': const [

@@ -1,5 +1,6 @@
 package com.jackappdev.flutteriap;
 
+import android.support.annotation.Nullable;
 import android.util.Log;
 
 import com.android.billingclient.api.BillingClient;
@@ -15,6 +16,16 @@ import static com.android.billingclient.api.BillingClient.SkuType.SUBS;
  */
 class ProtobufMapper {
   private static final String TAG = "FlutterIapPlugin";
+
+  @Nullable
+  static FlutterIap.IAPPurchaseRequest mapPurchaseRequest(Object source) {
+    try {
+      return FlutterIap.IAPPurchaseRequest.parseFrom((byte[]) source);
+    } catch (Throwable e) {
+      Log.e(TAG, "Can not read purchase request!", e);
+      return null;
+    }
+  }
 
   static byte[] buildProductResponse(List<SkuDetails> products) {
     FlutterIap.IAPResponse.Builder inventoryBuilder =

@@ -106,9 +106,17 @@ extension IAPResponseStatus: CaseIterable {
 
 #endif  // swift(>=4.2)
 
+/// Type of IAP product.
+/// The calling app should manage the list of SKUs and their corresponding types, because:
+/// iOS supports different IAP and subscription types, however the actual definition is not available through StoreKit.
+/// On Android a IAP is non-consumable until it has been consumed, eliminating the explicit type definition.
 enum IAPProductType: SwiftProtobuf.Enum {
   typealias RawValue = Int
+
+  /// Consumable or non-consumable IAP.
   case iap // = 0
+
+  /// Renewable or non-renewable IAP.
   case subscription // = 1
 
   init() {
@@ -177,6 +185,37 @@ extension IntroductoryPricePaymentMode: CaseIterable {
 }
 
 #endif  // swift(>=4.2)
+
+struct IAPPurchaseRequest {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  var productIdentifier: String {
+    get {return _productIdentifier ?? String()}
+    set {_productIdentifier = newValue}
+  }
+  /// Returns true if `productIdentifier` has been explicitly set.
+  var hasProductIdentifier: Bool {return self._productIdentifier != nil}
+  /// Clears the value of `productIdentifier`. Subsequent reads from it will return its default value.
+  mutating func clearProductIdentifier() {self._productIdentifier = nil}
+
+  var type: IAPProductType {
+    get {return _type ?? .iap}
+    set {_type = newValue}
+  }
+  /// Returns true if `type` has been explicitly set.
+  var hasType: Bool {return self._type != nil}
+  /// Clears the value of `type`. Subsequent reads from it will return its default value.
+  mutating func clearType() {self._type = nil}
+
+  var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  init() {}
+
+  fileprivate var _productIdentifier: String? = nil
+  fileprivate var _type: IAPProductType? = nil
+}
 
 struct IAPPurchase {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
@@ -487,6 +526,47 @@ extension IntroductoryPricePaymentMode: SwiftProtobuf._ProtoNameProviding {
     1: .same(proto: "payUpFront"),
     2: .same(proto: "freeTrial"),
   ]
+}
+
+extension IAPPurchaseRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  static let protoMessageName: String = "IAPPurchaseRequest"
+  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .same(proto: "productIdentifier"),
+    2: .same(proto: "type"),
+  ]
+
+  public var isInitialized: Bool {
+    if self._productIdentifier == nil {return false}
+    if self._type == nil {return false}
+    return true
+  }
+
+  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      switch fieldNumber {
+      case 1: try decoder.decodeSingularStringField(value: &self._productIdentifier)
+      case 2: try decoder.decodeSingularEnumField(value: &self._type)
+      default: break
+      }
+    }
+  }
+
+  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if let v = self._productIdentifier {
+      try visitor.visitSingularStringField(value: v, fieldNumber: 1)
+    }
+    if let v = self._type {
+      try visitor.visitSingularEnumField(value: v, fieldNumber: 2)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  static func ==(lhs: IAPPurchaseRequest, rhs: IAPPurchaseRequest) -> Bool {
+    if lhs._productIdentifier != rhs._productIdentifier {return false}
+    if lhs._type != rhs._type {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
 }
 
 extension IAPPurchase: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {

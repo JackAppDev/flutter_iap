@@ -17,7 +17,14 @@ public class SwiftFlutterIapPlugin: NSObject, FlutterPlugin {
       IAPHandler.shared.fetchAvailableProducts(call.arguments as! [String])
     case "buy":
       IAPHandler.shared.purchaseStatusBlock = result
-      IAPHandler.shared.purchaseMyProduct(call.arguments as! String)
+
+      if let args = call.arguments as? FlutterStandardTypedData,
+        let request = try? IAPPurchaseRequest(serializedData: args.data ) {
+
+        IAPHandler.shared.purchaseMyProduct(request.productIdentifier)
+      } else {
+        result(ProtobufMapper.simpleResponse(IAPResponseStatus.developerError))
+      }
     case "restore":
       IAPHandler.shared.purchaseStatusBlock = result
       IAPHandler.shared.restorePurchase()

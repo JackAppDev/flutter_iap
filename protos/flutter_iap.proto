@@ -41,9 +41,20 @@ enum IAPResponseStatus {
     itemNotOwned = 10;
 }
 
+// Type of IAP product.
+// The calling app should manage the list of SKUs and their corresponding types, because:
+// iOS supports different IAP and subscription types, however the actual definition is not available through StoreKit.
+// On Android a IAP is non-consumable until it has been consumed, eliminating the explicit type definition.
 enum IAPProductType {
+    // Consumable or non-consumable IAP.
     iap = 0;
+    // Renewable or non-renewable IAP.
     subscription = 1;
+}
+
+message IAPPurchaseRequest {
+  required string productIdentifier = 1;
+  required IAPProductType type = 2;
 }
 
 message IAPPurchase {

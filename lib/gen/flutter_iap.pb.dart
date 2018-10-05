@@ -14,6 +14,37 @@ import 'flutter_iap.pbenum.dart';
 
 export 'flutter_iap.pbenum.dart';
 
+class IAPPurchaseRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = new $pb.BuilderInfo('IAPPurchaseRequest')
+    ..aQS(1, 'productIdentifier')
+    ..e<IAPProductType>(2, 'type', $pb.PbFieldType.QE, IAPProductType.iap, IAPProductType.valueOf, IAPProductType.values)
+  ;
+
+  IAPPurchaseRequest() : super();
+  IAPPurchaseRequest.fromBuffer(List<int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) : super.fromBuffer(i, r);
+  IAPPurchaseRequest.fromJson(String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) : super.fromJson(i, r);
+  IAPPurchaseRequest clone() => new IAPPurchaseRequest()..mergeFromMessage(this);
+  IAPPurchaseRequest copyWith(void Function(IAPPurchaseRequest) updates) => super.copyWith((message) => updates(message as IAPPurchaseRequest));
+  $pb.BuilderInfo get info_ => _i;
+  static IAPPurchaseRequest create() => new IAPPurchaseRequest();
+  static $pb.PbList<IAPPurchaseRequest> createRepeated() => new $pb.PbList<IAPPurchaseRequest>();
+  static IAPPurchaseRequest getDefault() => _defaultInstance ??= create()..freeze();
+  static IAPPurchaseRequest _defaultInstance;
+  static void $checkItem(IAPPurchaseRequest v) {
+    if (v is! IAPPurchaseRequest) $pb.checkItemFailed(v, _i.qualifiedMessageName);
+  }
+
+  String get productIdentifier => $_getS(0, '');
+  set productIdentifier(String v) { $_setString(0, v); }
+  bool hasProductIdentifier() => $_has(0);
+  void clearProductIdentifier() => clearField(1);
+
+  IAPProductType get type => $_getN(1);
+  set type(IAPProductType v) { setField(2, v); }
+  bool hasType() => $_has(1);
+  void clearType() => clearField(2);
+}
+
 class IAPPurchase extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = new $pb.BuilderInfo('IAPPurchase')
     ..aQS(1, 'productIdentifier')

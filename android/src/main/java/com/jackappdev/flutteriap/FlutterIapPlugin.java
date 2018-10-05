@@ -17,8 +17,6 @@ import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
 import io.flutter.plugin.common.MethodChannel.Result;
 import io.flutter.plugin.common.PluginRegistry.Registrar;
 
-import static com.android.billingclient.api.BillingClient.SkuType.INAPP;
-
 /**
  * FlutterIapPlugin
  */
@@ -105,11 +103,16 @@ public class FlutterIapPlugin implements MethodCallHandler {
       }, null);
 
     } else if ("buy".equals(call.method)) {
+      final FlutterIap.IAPPurchaseRequest request = ProtobufMapper.mapPurchaseRequest(call.arguments);
+      if (request == null) {
+        result.success(ProtobufMapper.simpleResponse(FlutterIap.IAPResponseStatus.developerError));
+        return;
+      }
+
       billingManager = new BillingManager(activity, new BillingManager.BillingUpdatesListener() {
         @Override
         public void onBillingClientSetupFinished() {
-          billingManager
-              .initiatePurchaseFlow((String) call.arguments, INAPP);
+          billingManager.initiatePurchaseFlow(request.getProductIdentifier(), googleProductType(request.getType()));
         }
 
         @Override
@@ -183,5 +186,16 @@ public class FlutterIapPlugin implements MethodCallHandler {
     }
   }
 
+  @BillingClient.SkuType
+  private static String googleProductType(FlutterIap.IAPProductType type) {
+    switch (type) {
+      case iap:
+        return BillingClient.SkuType.INAPP;
+      case subscription:
+        return BillingClient.SkuType.SUBS;
+    }
+
+    return BillingClient.SkuType.INAPP;
+  }
 
 }

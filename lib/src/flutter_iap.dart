@@ -13,7 +13,16 @@ class FlutterIap {
       _respond("fetch", ids);
 
   /// Starts the purchase process
-  static Future<IAPResponse> buy(String id) async => _respond("buy", id);
+  static Future<IAPResponse> buy(
+    String id, {
+    IAPProductType type = IAPProductType.iap,
+  }) async {
+    final request = IAPPurchaseRequest.create();
+    request.productIdentifier = id;
+    request.type = type;
+
+    return _respond("buy", request.writeToBuffer());
+  }
 
   /// Consumes a previously purchased item
   static Future<IAPResponse> consume(String purchaseToken) async =>
