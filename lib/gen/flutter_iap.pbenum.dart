@@ -20,6 +20,8 @@ class IAPResponseStatus extends $pb.ProtobufEnum {
   static const IAPResponseStatus developerError = const IAPResponseStatus._(8, 'developerError');
   static const IAPResponseStatus itemAlreadyOwned = const IAPResponseStatus._(9, 'itemAlreadyOwned');
   static const IAPResponseStatus itemNotOwned = const IAPResponseStatus._(10, 'itemNotOwned');
+  static const IAPResponseStatus featureNotSupported = const IAPResponseStatus._(11, 'featureNotSupported');
+  static const IAPResponseStatus serviceDisconnected = const IAPResponseStatus._(12, 'serviceDisconnected');
 
   static const List<IAPResponseStatus> values = const <IAPResponseStatus> [
     ok,
@@ -33,6 +35,8 @@ class IAPResponseStatus extends $pb.ProtobufEnum {
     developerError,
     itemAlreadyOwned,
     itemNotOwned,
+    featureNotSupported,
+    serviceDisconnected,
   ];
 
   static final Map<int, IAPResponseStatus> _byValue = $pb.ProtobufEnum.initByValue(values);
@@ -62,23 +66,23 @@ class IAPProductType extends $pb.ProtobufEnum {
   const IAPProductType._(int v, String n) : super(v, n);
 }
 
-class IntroductoryPricePaymentMode extends $pb.ProtobufEnum {
-  static const IntroductoryPricePaymentMode payAsYouGo = const IntroductoryPricePaymentMode._(0, 'payAsYouGo');
-  static const IntroductoryPricePaymentMode payUpFront = const IntroductoryPricePaymentMode._(1, 'payUpFront');
-  static const IntroductoryPricePaymentMode freeTrial = const IntroductoryPricePaymentMode._(2, 'freeTrial');
+class IAPIntroductoryPricePaymentMode extends $pb.ProtobufEnum {
+  static const IAPIntroductoryPricePaymentMode payAsYouGo = const IAPIntroductoryPricePaymentMode._(0, 'payAsYouGo');
+  static const IAPIntroductoryPricePaymentMode payUpFront = const IAPIntroductoryPricePaymentMode._(1, 'payUpFront');
+  static const IAPIntroductoryPricePaymentMode freeTrial = const IAPIntroductoryPricePaymentMode._(2, 'freeTrial');
 
-  static const List<IntroductoryPricePaymentMode> values = const <IntroductoryPricePaymentMode> [
+  static const List<IAPIntroductoryPricePaymentMode> values = const <IAPIntroductoryPricePaymentMode> [
     payAsYouGo,
     payUpFront,
     freeTrial,
   ];
 
-  static final Map<int, IntroductoryPricePaymentMode> _byValue = $pb.ProtobufEnum.initByValue(values);
-  static IntroductoryPricePaymentMode valueOf(int value) => _byValue[value];
-  static void $checkItem(IntroductoryPricePaymentMode v) {
-    if (v is! IntroductoryPricePaymentMode) $pb.checkItemFailed(v, 'IntroductoryPricePaymentMode');
+  static final Map<int, IAPIntroductoryPricePaymentMode> _byValue = $pb.ProtobufEnum.initByValue(values);
+  static IAPIntroductoryPricePaymentMode valueOf(int value) => _byValue[value];
+  static void $checkItem(IAPIntroductoryPricePaymentMode v) {
+    if (v is! IAPIntroductoryPricePaymentMode) $pb.checkItemFailed(v, 'IAPIntroductoryPricePaymentMode');
   }
 
-  const IntroductoryPricePaymentMode._(int v, String n) : super(v, n);
+  const IAPIntroductoryPricePaymentMode._(int v, String n) : super(v, n);
 }
 

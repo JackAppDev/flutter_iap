@@ -27,13 +27,23 @@ class ProtobufMapper {
     }
   }
 
+  @Nullable
+  static FlutterIap.IAPFetchProductsRequest mapFetchRequest(Object source) {
+    try {
+      return FlutterIap.IAPFetchProductsRequest.parseFrom((byte[]) source);
+    } catch (Throwable e) {
+      Log.e(TAG, "Can not read fetch request!", e);
+      return null;
+    }
+  }
+
   static byte[] buildProductResponse(List<SkuDetails> products) {
     FlutterIap.IAPResponse.Builder inventoryBuilder =
         FlutterIap.IAPResponse.newBuilder();
 
     inventoryBuilder.setStatus(FlutterIap.IAPResponseStatus.ok);
 
-    for (SkuDetails p: products) {
+    for (SkuDetails p : products) {
       inventoryBuilder.addProducts(FlutterIap.IAPProduct.newBuilder()
           .setType(mapIapProductType(p.getType()))
           .setProductIdentifier(p.getSku())

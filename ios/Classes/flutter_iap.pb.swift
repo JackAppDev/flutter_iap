@@ -59,6 +59,12 @@ enum IAPResponseStatus: SwiftProtobuf.Enum {
   /// Failure to consume since item is not owned
   case itemNotOwned // = 10
 
+  /// Android: Requested feature is not supported by Play Store on the current device
+  case featureNotSupported // = 11
+
+  /// Android: Play Store service is not connected now - potentially transient state.
+  case serviceDisconnected // = 12
+
   init() {
     self = .ok
   }
@@ -76,6 +82,8 @@ enum IAPResponseStatus: SwiftProtobuf.Enum {
     case 8: self = .developerError
     case 9: self = .itemAlreadyOwned
     case 10: self = .itemNotOwned
+    case 11: self = .featureNotSupported
+    case 12: self = .serviceDisconnected
     default: return nil
     }
   }
@@ -93,6 +101,8 @@ enum IAPResponseStatus: SwiftProtobuf.Enum {
     case .developerError: return 8
     case .itemAlreadyOwned: return 9
     case .itemNotOwned: return 10
+    case .featureNotSupported: return 11
+    case .serviceDisconnected: return 12
     }
   }
 
@@ -149,7 +159,7 @@ extension IAPProductType: CaseIterable {
 #endif  // swift(>=4.2)
 
 /// https://developer.apple.com/documentation/storekit/skproductdiscount/paymentmode
-enum IntroductoryPricePaymentMode: SwiftProtobuf.Enum {
+enum IAPIntroductoryPricePaymentMode: SwiftProtobuf.Enum {
   typealias RawValue = Int
   case payAsYouGo // = 0
   case payUpFront // = 1
@@ -180,7 +190,7 @@ enum IntroductoryPricePaymentMode: SwiftProtobuf.Enum {
 
 #if swift(>=4.2)
 
-extension IntroductoryPricePaymentMode: CaseIterable {
+extension IAPIntroductoryPricePaymentMode: CaseIterable {
   // Support synthesized by the compiler.
 }
 
@@ -215,6 +225,18 @@ struct IAPPurchaseRequest {
 
   fileprivate var _productIdentifier: String? = nil
   fileprivate var _type: IAPProductType? = nil
+}
+
+struct IAPFetchProductsRequest {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  var productIdentifier: [String] = []
+
+  var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  init() {}
 }
 
 struct IAPPurchase {
@@ -510,6 +532,8 @@ extension IAPResponseStatus: SwiftProtobuf._ProtoNameProviding {
     8: .same(proto: "developerError"),
     9: .same(proto: "itemAlreadyOwned"),
     10: .same(proto: "itemNotOwned"),
+    11: .same(proto: "featureNotSupported"),
+    12: .same(proto: "serviceDisconnected"),
   ]
 }
 
@@ -520,7 +544,7 @@ extension IAPProductType: SwiftProtobuf._ProtoNameProviding {
   ]
 }
 
-extension IntroductoryPricePaymentMode: SwiftProtobuf._ProtoNameProviding {
+extension IAPIntroductoryPricePaymentMode: SwiftProtobuf._ProtoNameProviding {
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     0: .same(proto: "payAsYouGo"),
     1: .same(proto: "payUpFront"),
@@ -564,6 +588,35 @@ extension IAPPurchaseRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImple
   static func ==(lhs: IAPPurchaseRequest, rhs: IAPPurchaseRequest) -> Bool {
     if lhs._productIdentifier != rhs._productIdentifier {return false}
     if lhs._type != rhs._type {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension IAPFetchProductsRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  static let protoMessageName: String = "IAPFetchProductsRequest"
+  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .same(proto: "productIdentifier"),
+  ]
+
+  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      switch fieldNumber {
+      case 1: try decoder.decodeRepeatedStringField(value: &self.productIdentifier)
+      default: break
+      }
+    }
+  }
+
+  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if !self.productIdentifier.isEmpty {
+      try visitor.visitRepeatedStringField(value: self.productIdentifier, fieldNumber: 1)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  static func ==(lhs: IAPFetchProductsRequest, rhs: IAPFetchProductsRequest) -> Bool {
+    if lhs.productIdentifier != rhs.productIdentifier {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

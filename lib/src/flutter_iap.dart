@@ -9,8 +9,12 @@ class FlutterIap {
   static Future<IAPResponse> fetchInventory() async => _respond("inventory");
 
   /// Retrieve a list of products available for purchase.
-  static Future<IAPResponse> fetchProducts(List<String> ids) async =>
-      _respond("fetch", ids);
+  static Future<IAPResponse> fetchProducts(List<String> ids) async {
+    final request = IAPFetchProductsRequest.create();
+    request.productIdentifier.addAll(ids);
+
+    return _respond("fetch", request.writeToBuffer());
+  }
 
   /// Starts the purchase process
   static Future<IAPResponse> buy(

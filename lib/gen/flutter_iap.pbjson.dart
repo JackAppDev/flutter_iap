@@ -18,6 +18,8 @@ const IAPResponseStatus$json = const {
     const {'1': 'developerError', '2': 8},
     const {'1': 'itemAlreadyOwned', '2': 9},
     const {'1': 'itemNotOwned', '2': 10},
+    const {'1': 'featureNotSupported', '2': 11},
+    const {'1': 'serviceDisconnected', '2': 12},
   ],
 };
 
@@ -29,8 +31,8 @@ const IAPProductType$json = const {
   ],
 };
 
-const IntroductoryPricePaymentMode$json = const {
-  '1': 'IntroductoryPricePaymentMode',
+const IAPIntroductoryPricePaymentMode$json = const {
+  '1': 'IAPIntroductoryPricePaymentMode',
   '2': const [
     const {'1': 'payAsYouGo', '2': 0},
     const {'1': 'payUpFront', '2': 1},
@@ -43,6 +45,13 @@ const IAPPurchaseRequest$json = const {
   '2': const [
     const {'1': 'productIdentifier', '3': 1, '4': 2, '5': 9, '10': 'productIdentifier'},
     const {'1': 'type', '3': 2, '4': 2, '5': 14, '6': '.IAPProductType', '10': 'type'},
+  ],
+};
+
+const IAPFetchProductsRequest$json = const {
+  '1': 'IAPFetchProductsRequest',
+  '2': const [
+    const {'1': 'productIdentifier', '3': 1, '4': 3, '5': 9, '10': 'productIdentifier'},
   ],
 };
 

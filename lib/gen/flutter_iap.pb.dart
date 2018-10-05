@@ -45,6 +45,29 @@ class IAPPurchaseRequest extends $pb.GeneratedMessage {
   void clearType() => clearField(2);
 }
 
+class IAPFetchProductsRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = new $pb.BuilderInfo('IAPFetchProductsRequest')
+    ..pPS(1, 'productIdentifier')
+    ..hasRequiredFields = false
+  ;
+
+  IAPFetchProductsRequest() : super();
+  IAPFetchProductsRequest.fromBuffer(List<int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) : super.fromBuffer(i, r);
+  IAPFetchProductsRequest.fromJson(String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) : super.fromJson(i, r);
+  IAPFetchProductsRequest clone() => new IAPFetchProductsRequest()..mergeFromMessage(this);
+  IAPFetchProductsRequest copyWith(void Function(IAPFetchProductsRequest) updates) => super.copyWith((message) => updates(message as IAPFetchProductsRequest));
+  $pb.BuilderInfo get info_ => _i;
+  static IAPFetchProductsRequest create() => new IAPFetchProductsRequest();
+  static $pb.PbList<IAPFetchProductsRequest> createRepeated() => new $pb.PbList<IAPFetchProductsRequest>();
+  static IAPFetchProductsRequest getDefault() => _defaultInstance ??= create()..freeze();
+  static IAPFetchProductsRequest _defaultInstance;
+  static void $checkItem(IAPFetchProductsRequest v) {
+    if (v is! IAPFetchProductsRequest) $pb.checkItemFailed(v, _i.qualifiedMessageName);
+  }
+
+  List<String> get productIdentifier => $_getList(0);
+}
+
 class IAPPurchase extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = new $pb.BuilderInfo('IAPPurchase')
     ..aQS(1, 'productIdentifier')

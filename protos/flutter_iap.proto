@@ -39,6 +39,12 @@ enum IAPResponseStatus {
 
     // Failure to consume since item is not owned
     itemNotOwned = 10;
+
+    // Android: Requested feature is not supported by Play Store on the current device
+    featureNotSupported = 11;
+
+    // Android: Play Store service is not connected now - potentially transient state.
+    serviceDisconnected = 12;
 }
 
 // Type of IAP product.
@@ -57,6 +63,10 @@ message IAPPurchaseRequest {
   required IAPProductType type = 2;
 }
 
+message IAPFetchProductsRequest { 
+  repeated string productIdentifier = 1;  
+}
+
 message IAPPurchase {
   required string productIdentifier = 1;
   optional string signature = 2;
@@ -68,7 +78,7 @@ message IAPPurchase {
 }
 
 // https://developer.apple.com/documentation/storekit/skproductdiscount/paymentmode
-enum IntroductoryPricePaymentMode {
+enum IAPIntroductoryPricePaymentMode {
    payAsYouGo = 0;
    payUpFront = 1;
    freeTrial = 2; 
