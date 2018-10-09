@@ -5,6 +5,7 @@ Add _In-App Payments_ to your Flutter app with this plugin.
 - You can retrieve a list of previously purchased IAP product IDs (only Android)
 - You can fetch IAP products from Google Play and App Store
 - You can buy an IAP product
+- You can consume a IAP product (only Android)
 - You can restore purchases from App Store (only iOS)
 
 ## Getting Started
@@ -28,11 +29,11 @@ For help on adding as a dependency, view the [documentation](https://flutter.io/
 import 'package:flutter/material.dart';
 import 'package:flutter_iap/flutter_iap.dart';
 
-void main() => runApp(new MyApp());
+void main() => runApp(MyApp());
 
 class MyApp extends StatefulWidget {
   @override
-  _MyAppState createState() => new _MyAppState();
+  _MyAppState createState() => _MyAppState();
 }
 
 class _MyAppState extends State<MyApp> {
@@ -46,14 +47,25 @@ class _MyAppState extends State<MyApp> {
   }
 
   init() async {
+    // Android testers: You can use "android.test.purchased" to simulate a successful flow.
     List<String> productIds = ["com.example.testiap"];
 
-    IAPResponse response = await FlutterIap.fetchProducts(productIds);
-    productIds = response.products
+    IAPResponse products = await FlutterIap.fetchProducts(productIds);
+    if (products.status != IAPResponseStatus.ok) {
+      print("Products not retrieved, error: ${products.status}");
+      return;
+    }
+
+    IAPResponse purchased = await FlutterIap.fetchInventory();
+    if (purchased.status != IAPResponseStatus.ok) {
+      print("Inventory not retrieved, error: ${purchased.status}");
+      return;
+    }
+
+    productIds = products.products
         .map((IAPProduct product) => product.productIdentifier)
         .toList();
 
-    IAPResponse purchased = await FlutterIap.fetchInventory();
     List<String> purchasedIds = purchased.purchases
         .map((IAPPurchase purchase) => purchase.productIdentifier)
         .toList();
@@ -75,47 +87,55 @@ class _MyAppState extends State<MyApp> {
 
     List<Text> list = [];
     _alreadyPurchased.forEach((productId) {
-      list.add(new Text(productId));
+      list.add(Text(productId));
     });
 
     if (list.isEmpty) {
-      list.add(new Text("No previous purchases found."));
+      list.add(Text("No previous purchases found."));
     } else {
-      list.insert(0, new Text("Already purchased:"));
+      list.insert(0, Text("Already purchased:"));
     }
 
-    return new MaterialApp(
-      home: new Scaffold(
-        appBar: new AppBar(
-          title: new Text("flutter_iap example app"),
+    return MaterialApp(
+      home: Scaffold(
+        appBar: AppBar(
+          title: Text("flutter_iap example app"),
         ),
-        body: new Center(
-          child: new Column(
+        body: Center(
+          child: Column(
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
-              new Text(
+              Text(
                 _productIds.isNotEmpty
-                    ? "Fetched: $_productIds"
+                    ? "Available Products to purchase: $_productIds"
                     : "Not working?\n"
                     "Check that you set up in app purchases in\n"
                     "iTunes Connect / Google Play Console",
                 textAlign: TextAlign.center,
                 textScaleFactor: 1.25,
               ),
-              new SizedBox(
-                height: 24.0,
-              ),
+              SizedBox(height: 24.0),
             ].followedBy(list).toList(),
           ),
         ),
         floatingActionButton: nextPurchase != null
-            ? new FloatingActionButton(
-                child: new Icon(Icons.monetization_on),
-                onPressed: () {
-                  FlutterIap.buy(nextPurchase);
+            ? FloatingActionButton(
+                child: Icon(Icons.monetization_on),
+                onPressed: () async {
+                  IAPResponse response = await FlutterIap.buy(nextPurchase);
+                  if (response.purchases != null) {
+                    List<String> purchasedIds = response.purchases
+                        .map((IAPPurchase purchase) =>
+                            purchase.productIdentifier)
+                        .toList();
+
+                    setState(() {
+                      _alreadyPurchased = purchasedIds;
+                    });
+                  }
                 },
               )
-            : new Container(),
+            : Container(),
       ),
     );
   }
