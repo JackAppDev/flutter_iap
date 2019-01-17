@@ -4,24 +4,29 @@ import android.app.Activity;
 import android.app.Application;
 import android.os.Bundle;
 import android.util.Log;
+
 import com.android.billingclient.api.BillingClient;
 import com.android.billingclient.api.Purchase;
 import com.android.billingclient.api.SkuDetails;
 import com.android.billingclient.api.SkuDetailsResponseListener;
-import org.json.JSONObject;
+
+import java.util.List;
+
 import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
 import io.flutter.plugin.common.MethodChannel.Result;
 import io.flutter.plugin.common.PluginRegistry.Registrar;
-import java.util.List;
 
 /**
  * FlutterIapPlugin
  */
 public class FlutterIapPlugin implements MethodCallHandler {
+  private static final String TAG = "FlutterIapPlugin";
+
   private final Activity activity;
   private BillingManager billingManager;
+
 
   public static void registerWith(Registrar registrar) {
     final MethodChannel channel = new MethodChannel(registrar.messenger(), "flutter_iap");
@@ -72,6 +77,7 @@ public class FlutterIapPlugin implements MethodCallHandler {
         });
   }
 
+
   @Override
   public void onMethodCall(final MethodCall call, final Result result) {
     if (billingManager != null) {
@@ -79,120 +85,125 @@ public class FlutterIapPlugin implements MethodCallHandler {
       billingManager = null;
     }
 
-    if (call.method.equals("inventory")) { // gets skus
+    // gets skus
+    // gets products info
+    if ("inventory".equals(call.method)) {
       billingManager = new BillingManager(activity, new BillingManager.BillingUpdatesListener() {
         @Override
-        public void onBillingClientSetupFinished() {
-          billingManager.queryPurchases();
-        }
-
-        @Override
-        public void onConsumeFinished(String token, @BillingClient.BillingResponse int result) {
-          Log.e("token", token);
-        }
-
-        @Override
-        public void onPurchasesUpdated(List<Purchase> purchases) {
-          StringBuilder sb = new StringBuilder("[");
-
-          if (purchases != null) {
-            for (Purchase p : purchases) {
-              if (sb.length() > 1) {
-                sb.append(",");
-              }
-              sb.append("{");
-              sb.append("\"signature\":\"" + p.getSignature() + "\",");
-              sb.append("\"originalJson\":" + JSONObject.quote(p.getOriginalJson()) + ",");
-              sb.append("\"productIdentifier\":\"" + p.getSku() + "\"");
-              sb.append("}");
-            }
-          }
-          sb.append("]");
-
-          result.success("{\"status\":\"loaded\",\"purchases\":" + sb.toString() + "}");
-        }
-      }, null);
-    } else if (call.method.equals("buy")) {
-      billingManager = new BillingManager(activity, new BillingManager.BillingUpdatesListener() {
-        @Override
-        public void onBillingClientSetupFinished() {
-          billingManager.initiatePurchaseFlow((String) call.arguments, BillingClient.SkuType.INAPP);
-        }
-
-        @Override
-        public void onConsumeFinished(String token, @BillingClient.BillingResponse int result) {
-          Log.e("token", token);
-        }
-
-        @Override
-        public void onPurchasesUpdated(List<Purchase> purchases) {
-          Log.e("purchases", purchases.toString());
-          if (purchases.size() > 0) {
-            for (Purchase p : purchases) {
-              if (p.getSku().equalsIgnoreCase((String) call.arguments)) {
-                Log.e("Consuming", p.getSku());
-                billingManager.consumeAsync(p.getPurchaseToken());
-                break;
-              }
-            }
-
-            // TODO: Dry the code (see above).
-            StringBuilder sb = new StringBuilder("[");
-
-            for (Purchase p : purchases) {
-              if (sb.length() > 1) {
-                sb.append(",");
-              }
-              sb.append("{");
-              sb.append("\"signature\":\"" + p.getSignature() + "\",");
-              sb.append("\"originalJson\":" + JSONObject.quote(p.getOriginalJson()) + ",");
-              sb.append("\"productIdentifier\":\"" + p.getSku() + "\"");
-              sb.append("}");
-            }
-            sb.append("]");
-
-            result.success("{\"status\":\"loaded\",\"purchases\":" + sb.toString() + "}");
+        public void onBillingClientSetupFinished(@BillingClient.BillingResponse int responseCode) {
+          if (responseCode == BillingClient.BillingResponse.OK) {
+            billingManager.queryPurchases();
           } else {
-            result.error("ERROR", "Failed to buy", null);
+            result.success(ProtobufMapper.simpleResponse(mapGoogleResponseCode(responseCode)));
+          }
+        }
+
+        @Override
+        public void onConsumeFinished(String token,
+                                      @BillingClient.BillingResponse int responseCode) {
+        }
+
+        @Override
+        public void onPurchasesUpdated(List<Purchase> purchases, @BillingClient.BillingResponse int responseCode) {
+          if (responseCode == BillingClient.BillingResponse.OK) {
+            result.success(ProtobufMapper.buildInventoryResponse(purchases));
+          } else {
+            result.success(ProtobufMapper.simpleResponse(mapGoogleResponseCode(responseCode)));
           }
         }
       }, null);
-    } else if (call.method.equals("fetch")) { // gets products info
+
+    } else if ("buy".equals(call.method)) {
+      final FlutterIap.IAPPurchaseRequest request = ProtobufMapper.mapPurchaseRequest(call.arguments);
+      if (request == null) {
+        result.success(ProtobufMapper.simpleResponse(FlutterIap.IAPResponseStatus.developerError));
+        return;
+      }
+
       billingManager = new BillingManager(activity, new BillingManager.BillingUpdatesListener() {
         @Override
-        public void onBillingClientSetupFinished() {
-          billingManager.querySKUProducts((List<String>) call.arguments);
+        public void onBillingClientSetupFinished(@BillingClient.BillingResponse int responseCode) {
+          if (responseCode == BillingClient.BillingResponse.OK) {
+            billingManager.initiatePurchaseFlow(request.getProductIdentifier(), googleProductType(request.getType()));
+          } else {
+            result.success(ProtobufMapper.simpleResponse(mapGoogleResponseCode(responseCode)));
+          }
         }
 
         @Override
-        public void onConsumeFinished(String token, int result) {
+        public void onConsumeFinished(String token,
+                                      @BillingClient.BillingResponse int responseCode) {
         }
 
         @Override
-        public void onPurchasesUpdated(List<Purchase> purchases) {
+        public void onPurchasesUpdated(List<Purchase> purchases, @BillingClient.BillingResponse int responseCode) {
+          if (responseCode == BillingClient.BillingResponse.OK) {
+            result.success(ProtobufMapper.buildInventoryResponse(purchases));
+          } else {
+            result.success(ProtobufMapper.simpleResponse(mapGoogleResponseCode(responseCode)));
+          }
+        }
+      }, null);
+
+    } else if ("consume".equals(call.method)) {
+      billingManager = new BillingManager(activity, new BillingManager.BillingUpdatesListener() {
+        @Override
+        public void onBillingClientSetupFinished(@BillingClient.BillingResponse int responseCode) {
+          if (responseCode == BillingClient.BillingResponse.OK) {
+            billingManager.consumeAsync((String) call.arguments);
+          } else {
+            result.success(ProtobufMapper.simpleResponse(mapGoogleResponseCode(responseCode)));
+          }
+        }
+
+        @Override
+        public void onConsumeFinished(String token,
+                                      @BillingClient.BillingResponse int responseCode) {
+          if (responseCode == BillingClient.BillingResponse.OK) {
+            result.success(ProtobufMapper.simpleResponse(FlutterIap.IAPResponseStatus.ok));
+          } else {
+            result.success(ProtobufMapper.simpleResponse(mapGoogleResponseCode(responseCode)));
+          }
+        }
+
+        @Override
+        public void onPurchasesUpdated(List<Purchase> purchases, @BillingClient.BillingResponse int responseCode) {
+        }
+      }, null);
+
+    } else if ("fetch".equals(call.method)) {
+      final FlutterIap.IAPFetchProductsRequest request = ProtobufMapper.mapFetchRequest(call.arguments);
+      if (request == null) {
+        result.success(ProtobufMapper.simpleResponse(FlutterIap.IAPResponseStatus.developerError));
+        return;
+      }
+
+      billingManager = new BillingManager(activity, new BillingManager.BillingUpdatesListener() {
+        @Override
+        public void onBillingClientSetupFinished(@BillingClient.BillingResponse int responseCode) {
+          if (responseCode == BillingClient.BillingResponse.OK) {
+            billingManager.querySKUProducts(request.getProductIdentifierList());
+          } else {
+            result.success(ProtobufMapper.simpleResponse(mapGoogleResponseCode(responseCode)));
+          }
+        }
+
+        @Override
+        public void onConsumeFinished(String token,
+                                      @BillingClient.BillingResponse int responseCode) {
+        }
+
+        @Override
+        public void onPurchasesUpdated(List<Purchase> purchases, @BillingClient.BillingResponse int responseCode) {
         }
       }, new SkuDetailsResponseListener() {
         @Override
-        public void onSkuDetailsResponse(int responseCode, List<SkuDetails> skuDetailsList) {
-          StringBuilder sb = new StringBuilder("[");
-          if (skuDetailsList != null) {
-            for (SkuDetails details : skuDetailsList) {
-              if (sb.length() > 1) {
-                sb.append(",");
-              }
-              sb.append("{");
-              sb.append("\"localizedDescription\":\"" + details.getDescription() + "\",");
-              sb.append("\"localizedTitle\":\"" + details.getTitle() + "\",");
-              sb.append("\"price\":\"" + details.getPrice() + "\",");
-              sb.append("\"priceLocale\":\"" + details.getPriceCurrencyCode() + "\",");
-              sb.append("\"localizedPrice\":\"" + details.getPrice() + "\",");
-              sb.append("\"type\":\"" + details.getType() + "\",");
-              sb.append("\"productIdentifier\":\"" + details.getSku() + "\"");
-              sb.append("}");
-            }
+        public void onSkuDetailsResponse(@BillingClient.BillingResponse int responseCode, List<SkuDetails> skuDetailsList) {
+          if (responseCode == BillingClient.BillingResponse.OK) {
+            result.success(ProtobufMapper.buildProductResponse(skuDetailsList));
+          } else {
+            result.success(ProtobufMapper.simpleResponse(mapGoogleResponseCode(responseCode)));
           }
-          sb.append("]");
-          result.success("{\"status\":\"loaded\",\"products\":" + sb.toString() + "}");
         }
 
       });
@@ -201,7 +212,46 @@ public class FlutterIapPlugin implements MethodCallHandler {
     }
   }
 
-  public String jsonFromString(String status) {
-    return "{\"status\":\"" + status + "\"}";
+  @BillingClient.SkuType
+  private static String googleProductType(FlutterIap.IAPProductType type) {
+    switch (type) {
+      case iap:
+        return BillingClient.SkuType.INAPP;
+      case subscription:
+        return BillingClient.SkuType.SUBS;
+    }
+
+    return BillingClient.SkuType.INAPP;
+  }
+
+  private static FlutterIap.IAPResponseStatus mapGoogleResponseCode(@BillingClient.BillingResponse int responseCode) {
+    Log.e(TAG, "mapping response code: " + responseCode);
+    switch (responseCode) {
+      case BillingClient.BillingResponse.BILLING_UNAVAILABLE:
+        return FlutterIap.IAPResponseStatus.billingUnavailable;
+      case BillingClient.BillingResponse.DEVELOPER_ERROR:
+        return FlutterIap.IAPResponseStatus.developerError;
+      case BillingClient.BillingResponse.ERROR:
+        return FlutterIap.IAPResponseStatus.error;
+      case BillingClient.BillingResponse.FEATURE_NOT_SUPPORTED:
+        return FlutterIap.IAPResponseStatus.featureNotSupported;
+      case BillingClient.BillingResponse.ITEM_ALREADY_OWNED:
+        return FlutterIap.IAPResponseStatus.itemAlreadyOwned;
+      case BillingClient.BillingResponse.ITEM_NOT_OWNED:
+        return FlutterIap.IAPResponseStatus.itemNotOwned;
+      case BillingClient.BillingResponse.ITEM_UNAVAILABLE:
+        return FlutterIap.IAPResponseStatus.itemUnavailable;
+      case BillingClient.BillingResponse.OK:
+        return FlutterIap.IAPResponseStatus.ok;
+      case BillingClient.BillingResponse.SERVICE_DISCONNECTED:
+        return FlutterIap.IAPResponseStatus.serviceDisconnected;
+      case BillingClient.BillingResponse.SERVICE_UNAVAILABLE:
+        return FlutterIap.IAPResponseStatus.serviceUnavailable;
+      case BillingClient.BillingResponse.USER_CANCELED:
+        return FlutterIap.IAPResponseStatus.userCanceled;
+      default:
+        Log.e(TAG, "Unknown response code: " + responseCode);
+        return FlutterIap.IAPResponseStatus.error;
+    }
   }
 }

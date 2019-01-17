@@ -1,26 +1,40 @@
 import Flutter
 import UIKit
-    
+
 public class SwiftFlutterIapPlugin: NSObject, FlutterPlugin {
   public static func register(with registrar: FlutterPluginRegistrar) {
     let channel = FlutterMethodChannel(name: "flutter_iap", binaryMessenger: registrar.messenger())
     let instance = SwiftFlutterIapPlugin()
     registrar.addMethodCallDelegate(instance, channel: channel)
   }
-
+  
   public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
     switch call.method {
     case "inventory":
-      result("{\"status\":\"loaded\",\"purchases\":[]}")
+      result(ProtobufMapper.buildInventoryResponse([]))
     case "fetch":
       IAPHandler.shared.purchaseStatusBlock = result
-      IAPHandler.shared.fetchAvailableProducts(call.arguments as! [String], result)
+      
+      if let args = call.arguments as? FlutterStandardTypedData,
+        let request = try? IAPFetchProductsRequest(serializedData: args.data ) {
+
+        IAPHandler.shared.fetchAvailableProducts(request.productIdentifier)
+      } else {
+        result(ProtobufMapper.simpleResponse(IAPResponseStatus.developerError))
+      }
     case "buy":
       IAPHandler.shared.purchaseStatusBlock = result
-      IAPHandler.shared.purchaseMyProduct(call.arguments as! String)
+
+      if let args = call.arguments as? FlutterStandardTypedData,
+        let request = try? IAPPurchaseRequest(serializedData: args.data ) {
+
+        IAPHandler.shared.purchaseMyProduct(request.productIdentifier)
+      } else {
+        result(ProtobufMapper.simpleResponse(IAPResponseStatus.developerError))
+      }
     case "restore":
-        IAPHandler.shared.purchaseStatusBlock = result
-        IAPHandler.shared.restorePurchase()
+      IAPHandler.shared.purchaseStatusBlock = result
+      IAPHandler.shared.restorePurchase()
     default:
       break
     }
@@ -33,18 +47,19 @@ class IAPHandler: NSObject {
   static var shared = IAPHandler()
   fileprivate var productID = ""
   fileprivate var productsRequest = SKProductsRequest()
+  
   fileprivate var iapProducts = [String : SKProduct]()
-    
-    // temporary variable to hold the restored IDs.
-  fileprivate var restoredIds : [String] = []
-    
-  var purchaseStatusBlock: ((String) -> Void)?
+  
+  // temporary variable to hold the restored IDs.
+  fileprivate var restoredIds : [SKPaymentTransaction] = []
+  
+  var purchaseStatusBlock: ((Any) -> Void)?
   
   func canMakePurchases() -> Bool {  return SKPaymentQueue.canMakePayments()  }
   
   func purchaseMyProduct(_ id: String) {
     if iapProducts.count == 0 {
-      purchaseStatusBlock?(jsonFromString(status: "emptyProducts"))
+      purchaseStatusBlock?(ProtobufMapper.simpleResponse(IAPResponseStatus.emptyProductList))
       return
     }
     
@@ -56,7 +71,7 @@ class IAPHandler: NSObject {
       
       productID = product.productIdentifier
     } else {
-      purchaseStatusBlock?(jsonFromString(status: "disabled"))
+      purchaseStatusBlock?(ProtobufMapper.simpleResponse(IAPResponseStatus.disabled))
     }
   }
   
@@ -67,88 +82,63 @@ class IAPHandler: NSObject {
     SKPaymentQueue.default().restoreCompletedTransactions()
   }
   
-  func fetchAvailableProducts(_ ids: [String], _ completion: ([Any]) -> ()) {
+  func fetchAvailableProducts(_ ids: [String]) {
     productsRequest = SKProductsRequest(productIdentifiers: Set(ids))
     productsRequest.delegate = self
     productsRequest.start()
   }
-    
-    func jsonFromString(status: String) -> String{
-        return "{\"status\":\"\(status)\"}"
-    }
-    
-    func jsonFromError(_ error: Error) -> String{
-        return "{\"status\":\"failed\",\"message\":\"\(error.localizedDescription)\"}"
-    }
-    
-    func jsonFromProduct(product: SKProduct) -> String{
-        let numberFormatter = NumberFormatter()
-        numberFormatter.formatterBehavior = .behavior10_4
-        numberFormatter.numberStyle = .currency
-        numberFormatter.locale = product.priceLocale
-        let formattedPrice = numberFormatter.string(from: product.price) ?? ""
-        
-        var result: String =  "{\"localizedDescription\":\"\(product.localizedDescription)\""
-        result.append(",\"localizedTitle\":\"\(product.localizedTitle)\"")
-        result.append(",\"price\":\"\(product.price)\"")
-        result.append(",\"priceLocale\":\"\(product.priceLocale)\"")
-        result.append(",\"localizedPrice\":\"\(formattedPrice)\"")
-        result.append(",\"productIdentifier\":\"\(product.productIdentifier)\"")
-        result.append(",\"downloadContentLengths\":\"\(product.downloadContentLengths)\"")
-        result.append(",\"downloadContentVersion\":\"\(product.downloadContentVersion)\"}")
-        return result
-    }
 }
 
 extension IAPHandler: SKProductsRequestDelegate {
-    func productsRequest (_ request:SKProductsRequest, didReceive response:SKProductsResponse) {
-        var products: [String] = []
-        for product in response.products {
-            iapProducts[product.productIdentifier] = product
-            products.append(jsonFromProduct(product: product))
-        }
-        for ip in response.invalidProductIdentifiers {
-            NSLog("invalid product identifier: \(ip)")
-        }
-        
-        purchaseStatusBlock?("{\"status\":\"loaded\",\"products\":[\(products.joined(separator: ","))]}")
+  func productsRequest (_ request:SKProductsRequest, didReceive response:SKProductsResponse) {
+    iapProducts.removeAll()
+    for product in response.products {
+      iapProducts[product.productIdentifier] = product
     }
+    
+    for ip in response.invalidProductIdentifiers {
+      NSLog("invalid product identifier: \(ip)")
+    }
+    
+    purchaseStatusBlock?(ProtobufMapper.buildProductResponse(response.products))
+  }
 }
 
 extension IAPHandler: SKPaymentTransactionObserver {
   
   func paymentQueueRestoreCompletedTransactionsFinished(_ queue: SKPaymentQueue) {
-    purchaseStatusBlock?("{\"status\":\"loaded\",\"purchases\":[" + restoredIds.joined(separator: ",") + "]}")
-    }
+    purchaseStatusBlock?(ProtobufMapper.buildInventoryResponse(restoredIds))
     
-    func paymentQueue(_ queue: SKPaymentQueue, restoreCompletedTransactionsFailedWithError error: Error) {
-        purchaseStatusBlock?(jsonFromError(error))
-    }
+    restoredIds.removeAll()
+  }
+  
+  func paymentQueue(_ queue: SKPaymentQueue, restoreCompletedTransactionsFailedWithError error: Error) {
+    purchaseStatusBlock?(ProtobufMapper.simpleResponse(IAPResponseStatus.error))
+
+    restoredIds.removeAll()
+  }
   
   func paymentQueue(_ queue: SKPaymentQueue, updatedTransactions transactions: [SKPaymentTransaction]) {
     for transaction:AnyObject in transactions {
-      if let trans = transaction as? SKPaymentTransaction {
-        switch trans.transactionState {
-          case .purchased:
-            SKPaymentQueue.default().finishTransaction(trans)
-
-            let productIds = [ "{\"productIdentifier\": \"\(trans.payment.productIdentifier)\"}" ]
-
-            purchaseStatusBlock?("{\"status\":\"loaded\",\"purchases\":[" + productIds.joined(separator: ",") + "]}")
-            break
-          case .failed:
-            SKPaymentQueue.default().finishTransaction(transaction as! SKPaymentTransaction)
-            purchaseStatusBlock?(jsonFromString(status: "failed"))
-            break
-          case .restored:
-            SKPaymentQueue.default().finishTransaction(transaction as! SKPaymentTransaction)
-            restoredIds.append("{\"productIdentifier\": \"\(trans.payment.productIdentifier)\"}")
-            break
+      if let transaction = transaction as? SKPaymentTransaction {
+        switch transaction.transactionState {
+        case .purchased:
+          SKPaymentQueue.default().finishTransaction(transaction)
+          purchaseStatusBlock?(ProtobufMapper.buildInventoryResponse([transaction]))
+          break
+        case .failed:
+          SKPaymentQueue.default().finishTransaction(transaction)
+          purchaseStatusBlock?(ProtobufMapper.simpleResponse(IAPResponseStatus.error))
+          break
+        case .restored:
+          SKPaymentQueue.default().finishTransaction(transaction)
+          restoredIds.append(transaction)
+          break
         default: 
           break
         }
       }
     }
-  }
+  }  
 }
 

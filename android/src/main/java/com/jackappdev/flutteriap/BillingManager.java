@@ -2,7 +2,9 @@ package com.jackappdev.flutteriap;
 
 import android.app.Activity;
 import android.content.Context;
+import android.support.annotation.NonNull;
 import android.util.Log;
+
 import com.android.billingclient.api.BillingClient;
 import com.android.billingclient.api.BillingClient.BillingResponse;
 import com.android.billingclient.api.BillingClient.FeatureType;
@@ -16,6 +18,7 @@ import com.android.billingclient.api.PurchasesUpdatedListener;
 import com.android.billingclient.api.SkuDetails;
 import com.android.billingclient.api.SkuDetailsParams;
 import com.android.billingclient.api.SkuDetailsResponseListener;
+
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -29,11 +32,12 @@ import java.util.Set;
 public class BillingManager implements PurchasesUpdatedListener {
   // Default value of mBillingClientResponseCode until BillingManager was not yeat
   // initialized
-  public static final int BILLING_MANAGER_NOT_INITIALIZED = -1;
 
   private static final String TAG = "BillingManager";
 
-  /** A reference to BillingClient **/
+  /**
+   * A reference to BillingClient
+   **/
   private BillingClient mBillingClient;
 
   /**
@@ -41,6 +45,7 @@ public class BillingManager implements PurchasesUpdatedListener {
    */
   private boolean mIsServiceConnected;
 
+  @NonNull
   private final BillingUpdatesListener mBillingUpdatesListener;
 
   private final SkuDetailsResponseListener mSkuDetailsResponseListener;
@@ -51,7 +56,8 @@ public class BillingManager implements PurchasesUpdatedListener {
 
   private Set<String> mTokensToBeConsumed;
 
-  private int mBillingClientResponseCode = BILLING_MANAGER_NOT_INITIALIZED;
+  @BillingResponse
+  private int mBillingClientResponseCode;
 
   /*
    * BASE_64_ENCODED_PUBLIC_KEY should be YOUR APPLICATION'S PUBLIC KEY (that you
@@ -74,11 +80,11 @@ public class BillingManager implements PurchasesUpdatedListener {
    * consumption of the item was finished
    */
   public interface BillingUpdatesListener {
-    void onBillingClientSetupFinished();
+    void onBillingClientSetupFinished(@BillingResponse int responseCode);
 
-    void onConsumeFinished(String token, @BillingResponse int result);
+    void onConsumeFinished(String token, @BillingResponse int responseCode);
 
-    void onPurchasesUpdated(List<Purchase> purchases);
+    void onPurchasesUpdated(List<Purchase> purchases, @BillingResponse int responseCode);
   }
 
   /**
@@ -88,8 +94,8 @@ public class BillingManager implements PurchasesUpdatedListener {
     void onServiceConnected(@BillingResponse int resultCode);
   }
 
-  public BillingManager(Activity activity, final BillingUpdatesListener updatesListener,
-      final SkuDetailsResponseListener responseListener) {
+  public BillingManager(Activity activity, @NonNull final BillingUpdatesListener updatesListener,
+                        final SkuDetailsResponseListener responseListener) {
     Log.d(TAG, "Creating Billing client.");
     mActivity = activity;
     mBillingUpdatesListener = updatesListener;
@@ -107,7 +113,7 @@ public class BillingManager implements PurchasesUpdatedListener {
       public void run() {
         // Notifying the listener that billing client is ready
         if (mBillingUpdatesListener != null) {
-          mBillingUpdatesListener.onBillingClientSetupFinished();
+          mBillingUpdatesListener.onBillingClientSetupFinished(mBillingClientResponseCode);
         }
       }
     });
@@ -122,13 +128,10 @@ public class BillingManager implements PurchasesUpdatedListener {
       for (Purchase purchase : purchases) {
         handlePurchase(purchase);
       }
-      if (mBillingUpdatesListener != null) {
-        mBillingUpdatesListener.onPurchasesUpdated(mPurchases);
-      }
-    } else if (resultCode == BillingResponse.USER_CANCELED) {
-      Log.i(TAG, "onPurchasesUpdated() - user cancelled the purchase flow - skipping");
-    } else {
-      Log.w(TAG, "onPurchasesUpdated() got unknown resultCode: " + resultCode);
+    }
+
+    if (mBillingUpdatesListener != null) {
+      mBillingUpdatesListener.onPurchasesUpdated(mPurchases, resultCode);
     }
   }
 
@@ -143,7 +146,7 @@ public class BillingManager implements PurchasesUpdatedListener {
    * Start a purchase or subscription replace flow
    */
   public void initiatePurchaseFlow(final String skuId, final String oldSku,
-      final @SkuType String billingType) {
+                                   final @SkuType String billingType) {
     Runnable purchaseFlowRequest = new Runnable() {
       @Override
       public void run() {
@@ -157,9 +160,9 @@ public class BillingManager implements PurchasesUpdatedListener {
     executeServiceRequest(purchaseFlowRequest);
   }
 
-  public Context getContext() {
-    return mActivity;
-  }
+//  public Context getContext() {
+//    return mActivity;
+//  }
 
   /**
    * Clear the resources
@@ -254,7 +257,7 @@ public class BillingManager implements PurchasesUpdatedListener {
    * client. It's recommended to move this check into your backend. See
    * {@link Security#verifyPurchase(String, String, String)}
    * </p>
-   * 
+   *
    * @param purchase Purchase to be handled
    */
   private void handlePurchase(Purchase purchase) {
@@ -345,19 +348,19 @@ public class BillingManager implements PurchasesUpdatedListener {
     executeServiceRequest(queryToExecute);
   }
 
-  public void startServiceConnection(final Runnable executeOnSuccess) {
+  public void startServiceConnection(final Runnable onConnected) {
     mBillingClient.startConnection(new BillingClientStateListener() {
       @Override
       public void onBillingSetupFinished(@BillingResponse int billingResponseCode) {
         Log.d(TAG, "Setup finished. Response code: " + billingResponseCode);
 
-        if (billingResponseCode == BillingResponse.OK) {
-          mIsServiceConnected = true;
-          if (executeOnSuccess != null) {
-            executeOnSuccess.run();
-          }
-        }
         mBillingClientResponseCode = billingResponseCode;
+
+        mIsServiceConnected = billingResponseCode == BillingResponse.OK;
+
+        if (onConnected != null) {
+          onConnected.run();
+        }
       }
 
       @Override
@@ -394,7 +397,7 @@ public class BillingManager implements PurchasesUpdatedListener {
      * if (BASE_64_ENCODED_PUBLIC_KEY.contains("CONSTRUCT_YOUR")) { throw new
      * RuntimeException("Please update your app's public key at: " +
      * "BASE_64_ENCODED_PUBLIC_KEY"); }
-     * 
+     *
      * try { return Security.verifyPurchase(BASE_64_ENCODED_PUBLIC_KEY, signedData,
      * signature); } catch (IOException e) { Log.e(TAG,
      * "Got an exception trying to validate a purchase: " + e); return false; }
