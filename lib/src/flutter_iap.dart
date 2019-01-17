@@ -5,21 +5,25 @@ class FlutterIap {
   static Future<IAPResponse> _respond(String method, [args]) async =>
       IAPResponse.fromBuffer(await _channel.invokeMethod(method, args));
 
-  /// Android only: Retrieve a list of products which have been purchased previously.
+  /// Android only: Retrieve a list of previously purchased products.
   static Future<IAPResponse> fetchInventory() async => _respond("inventory");
 
   /// Retrieve a list of products available for purchase.
+  ///
+  /// The list of [ids] must contain a list of valid product identifiers.
   static Future<IAPResponse> fetchProducts(List<String> ids) async {
+    assert(ids.isNotEmpty);
+
     final request = IAPFetchProductsRequest.create();
     request.productIdentifier.addAll(ids);
 
     return _respond("fetch", request.writeToBuffer());
   }
 
-  /// Starts the purchase process
+  /// Starts the purchase process for a specific product [id] of [type].
   static Future<IAPResponse> buy(
-    String id, {
-    IAPProductType type = IAPProductType.iap,
+    @required String id, {
+    @required IAPProductType type = IAPProductType.iap,
   }) async {
     final request = IAPPurchaseRequest.create();
     request.productIdentifier = id;

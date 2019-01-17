@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_iap/flutter_iap.dart';
+import 'package:flutter_iap/gen/flutter_iap.pb.dart';
 
 void main() => runApp(MyApp());
 
@@ -94,7 +95,10 @@ class _MyAppState extends State<MyApp> {
             ? FloatingActionButton(
                 child: Icon(Icons.monetization_on),
                 onPressed: () async {
-                  IAPResponse response = await FlutterIap.buy(nextPurchase);
+                  IAPResponse response = await FlutterIap.buy(
+                    nextPurchase,
+                    type: IAPProductType.iap,
+                  );
                   if (response.purchases != null) {
                     List<String> purchasedIds = response.purchases
                         .map((IAPPurchase purchase) =>

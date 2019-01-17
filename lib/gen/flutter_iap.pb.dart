@@ -5,7 +5,7 @@
 // ignore_for_file: non_constant_identifier_names,library_prefixes,unused_import
 
 // ignore: UNUSED_SHOWN_NAME
-import 'dart:core' show int, bool, double, String, List, override;
+import 'dart:core' show int, bool, double, String, List, Map, override;
 
 import 'package:fixnum/fixnum.dart';
 import 'package:protobuf/protobuf.dart' as $pb;
@@ -27,6 +27,7 @@ class IAPPurchaseRequest extends $pb.GeneratedMessage {
   IAPPurchaseRequest copyWith(void Function(IAPPurchaseRequest) updates) => super.copyWith((message) => updates(message as IAPPurchaseRequest));
   $pb.BuilderInfo get info_ => _i;
   static IAPPurchaseRequest create() => new IAPPurchaseRequest();
+  IAPPurchaseRequest createEmptyInstance() => create();
   static $pb.PbList<IAPPurchaseRequest> createRepeated() => new $pb.PbList<IAPPurchaseRequest>();
   static IAPPurchaseRequest getDefault() => _defaultInstance ??= create()..freeze();
   static IAPPurchaseRequest _defaultInstance;
@@ -58,6 +59,7 @@ class IAPFetchProductsRequest extends $pb.GeneratedMessage {
   IAPFetchProductsRequest copyWith(void Function(IAPFetchProductsRequest) updates) => super.copyWith((message) => updates(message as IAPFetchProductsRequest));
   $pb.BuilderInfo get info_ => _i;
   static IAPFetchProductsRequest create() => new IAPFetchProductsRequest();
+  IAPFetchProductsRequest createEmptyInstance() => create();
   static $pb.PbList<IAPFetchProductsRequest> createRepeated() => new $pb.PbList<IAPFetchProductsRequest>();
   static IAPFetchProductsRequest getDefault() => _defaultInstance ??= create()..freeze();
   static IAPFetchProductsRequest _defaultInstance;
@@ -86,6 +88,7 @@ class IAPPurchase extends $pb.GeneratedMessage {
   IAPPurchase copyWith(void Function(IAPPurchase) updates) => super.copyWith((message) => updates(message as IAPPurchase));
   $pb.BuilderInfo get info_ => _i;
   static IAPPurchase create() => new IAPPurchase();
+  IAPPurchase createEmptyInstance() => create();
   static $pb.PbList<IAPPurchase> createRepeated() => new $pb.PbList<IAPPurchase>();
   static IAPPurchase getDefault() => _defaultInstance ??= create()..freeze();
   static IAPPurchase _defaultInstance;
@@ -155,6 +158,7 @@ class IAPProduct extends $pb.GeneratedMessage {
   IAPProduct copyWith(void Function(IAPProduct) updates) => super.copyWith((message) => updates(message as IAPProduct));
   $pb.BuilderInfo get info_ => _i;
   static IAPProduct create() => new IAPProduct();
+  IAPProduct createEmptyInstance() => create();
   static $pb.PbList<IAPProduct> createRepeated() => new $pb.PbList<IAPProduct>();
   static IAPProduct getDefault() => _defaultInstance ??= create()..freeze();
   static IAPProduct _defaultInstance;
@@ -253,6 +257,7 @@ class IAPResponse extends $pb.GeneratedMessage {
   IAPResponse copyWith(void Function(IAPResponse) updates) => super.copyWith((message) => updates(message as IAPResponse));
   $pb.BuilderInfo get info_ => _i;
   static IAPResponse create() => new IAPResponse();
+  IAPResponse createEmptyInstance() => create();
   static $pb.PbList<IAPResponse> createRepeated() => new $pb.PbList<IAPResponse>();
   static IAPResponse getDefault() => _defaultInstance ??= create()..freeze();
   static IAPResponse _defaultInstance;
