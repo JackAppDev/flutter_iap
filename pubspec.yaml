@@ -1,6 +1,6 @@
 name: flutter_iap
 description: in app purchases for flutter
-version: 2.0.0-pre2
+version: 2.0.0-pre2+1
 author: Jack ODonnell <jackappdevinc@gmail.com>
 homepage: https://github.com/JackAppDev/flutter_iap/
 
@@ -9,7 +9,7 @@ environment:
 
 dependencies:
   fixnum: ^0.10.9
-  protobuf: ^0.12.0
+  protobuf: ^0.13.0
   meta: ^1.1.6
   flutter:
     sdk: flutter

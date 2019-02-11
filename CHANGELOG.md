@@ -1,3 +1,7 @@
+## 2.0.0-pre2+1
+
+* Bump protobuf dependency to 0.13.2
+
 ## 2.0.0-pre2
 
 * **Breaking change**. Migrate from the deprecated original Android Support
